@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Tuning";
+}
+@section Scripts {
+    <script type="text/javascript" src=@Url.Content("~/Scripts/tuning.js")></script>
+}
+<h1>Tune Robots</h1>
+<div data-bots="@ViewBag.Robots" id="robots">
+    <a id="done" href="/Setup/finishBotConfig">Done</a>
+</div>
+<div id="controls" style="width: 90%;">
+    <div id="sliders">
+        <!-- Sliders are populated via JavaScript -->      
+    </div>
+    <p>Robot name: <input type='text' name="robotName" id="robotName" /></p>
+
+    <a href="#" id="speedtest">Speed Test</a> <a href="#" id="navtest">Navigation Test</a> <a href="#" id="finish">Finish</a>
+</div>

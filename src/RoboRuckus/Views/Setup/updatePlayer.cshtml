@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["Title"] = "Player Updated";
+}
+
+<h1>Player Updated</h1>
+@section scripts{
+
+    <script type="text/javascript">    
+            function closeWindow() {
+                setTimeout(function () {
+                    $(window.top.document).find('.ui-dialog').remove();
+                }, 1000);
+            }
+            closeWindow();
+    </script>
+    }

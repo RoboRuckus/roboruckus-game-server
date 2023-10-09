@@ -1,0 +1,160 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <AssemblyName>RoboRuckus</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <PackageId>RoboRuckus</PackageId>
+    <ApplicationIcon />
+    <StartupObject></StartupObject>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Copyright>Sam Groveman</Copyright>
+    <PackageProjectUrl>https://www.roboruckus.com/</PackageProjectUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <RepositoryUrl>https://github.com/ShVerni/RoboRuckus</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/ShVerni/RoboRuckus/blob/master/LICENSE.md</PackageLicenseUrl>
+    <NeutralLanguage />
+    <UserSecretsId>762533f3-d4d7-48b2-b245-2a0af316841e</UserSecretsId>
+    <PackageLicenseExpression>GNU Affero General Public License v3.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;NETCOREAPP</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Update="wwwroot\**\*;Views\**\*;appsettings.json;web.config;GameConfig\**\*">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="7.0.10" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SkiaSharp" Version="2.88.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="GameConfig\movementCards.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Background.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Beam-1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Beam-2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Beam-3.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Border.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\CCWRotator.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Conveyor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\ConveyorCurve.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\ConveyorCurveS.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Corner.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\CWRotator.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\ExpressConveyor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\ExpressConveyorCurve.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\ExpressConveyorCurveS.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Laser-1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Laser-2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Laser-3.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Pit.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Wall.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\BoardMakerFiles\Wrench.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+    <Folder Include="wwwroot\images\printable_boards\" />
+    <Folder Include="wwwroot\lib\jqueryUI\" />
+    <Folder Include="wwwroot\lib\signalr\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Target Name="CopySignalR" BeforeTargets="AfterBuild">
+    <ItemGroup>
+      <SignalRJSClientFiles Include="$(SolutionDir)node_modules\@microsoft\signalr\dist\browser\signalr.min.js" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr" />
+  </Target>
+  <Target Name="CopyHowler" BeforeTargets="AfterBuild">
+    <ItemGroup>
+      <HowlerClientFiles Include="$(SolutionDir)node_modules\howler\dist\howler.min.js" />
+    </ItemGroup>
+    <Copy SourceFiles="@(HowlerClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\howler" />
+  </Target>
+  <Target Name="CopyJQuery" BeforeTargets="AfterBuild">
+    <ItemGroup>
+      <JQueryClientFiles Include="$(SolutionDir)node_modules\jquery\dist\jquery.min.js" />
+    </ItemGroup>
+    <Copy SourceFiles="@(JQueryClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\jquery" />
+  </Target>
+  <Target Name="CopyJQueryUI" BeforeTargets="AfterBuild">
+	<ItemGroup>
+	  <JQueryUIClientFiles Include="$(SolutionDir)node_modules\jquery-ui-dist\jquery-ui.min.js" />
+	  <JQueryUIClientFiles Include="$(SolutionDir)node_modules\jquery-ui-themes\themes\ui-lightness\jquery-ui.css" />
+	  <JQueryUIClientFiles Include="$(SolutionDir)node_modules\jquery-ui-dist\jquery-ui.structure.css" />
+	  <JQueryUIImagesClientFiles Include="$(SolutionDir)node_modules\jquery-ui-themes\themes\ui-lightness\images\*" />
+	</ItemGroup>
+	<Copy SourceFiles="@(JQueryUIClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\jqueryUI" />
+	<Copy SourceFiles="@(JQueryUIImagesClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\jqueryUI\images" />
+  </Target>
+  <Target Name="CopyStartRoboRuckus" AfterTargets="AfterPublish">
+    <ItemGroup>
+      <StartRoboRuckusFiles Include="$(SolutionDir)PiReady\start_roboruckus.sh" />
+    </ItemGroup>
+    <Copy SourceFiles="@(StartRoboRuckusFiles)" DestinationFolder="$(SolutionDir)PiReady\RoboRuckus\" />
+  </Target> 
+  <Target Name="CopyRoboRuckusService" AfterTargets="AfterPublish">
+    <ItemGroup>
+      <RoboRuckusServiceFiles Include="$(SolutionDir)PiReady\roboruckus.service" />
+    </ItemGroup>
+    <Copy SourceFiles="@(RoboRuckusServiceFiles)" DestinationFolder="$(SolutionDir)PiReady\RoboRuckus\" />
+  </Target>
+</Project>
