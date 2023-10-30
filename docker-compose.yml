@@ -1,0 +1,19 @@
+version: '3.2'
+
+services:
+
+  gameserver:
+    image: yeticraft/roboruckus:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ${PWD}Boards:/app/GameConfig/Boards
+      - ${PWD}Images:/app/wwwroot/images/boards
+    ports:
+      - 8082:8082
+
+    #deploy:
+    #  mode: global
+    #  placement:
+    #    constraints: [node.platform.os == linux]
