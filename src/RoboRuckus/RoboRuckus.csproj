@@ -25,7 +25,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Update="wwwroot\**\*;Views\**\*;appsettings.json;web.config;GameConfig\**\*">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
@@ -117,34 +117,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <Target Name="CopySignalR" BeforeTargets="AfterBuild">
-    <ItemGroup>
-      <SignalRJSClientFiles Include="$(SolutionDir)node_modules\@microsoft\signalr\dist\browser\signalr.min.js" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr" />
-  </Target>
-  <Target Name="CopyHowler" BeforeTargets="AfterBuild">
-    <ItemGroup>
-      <HowlerClientFiles Include="$(SolutionDir)node_modules\howler\dist\howler.min.js" />
-    </ItemGroup>
-    <Copy SourceFiles="@(HowlerClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\howler" />
-  </Target>
-  <Target Name="CopyJQuery" BeforeTargets="AfterBuild">
-    <ItemGroup>
-      <JQueryClientFiles Include="$(SolutionDir)node_modules\jquery\dist\jquery.min.js" />
-    </ItemGroup>
-    <Copy SourceFiles="@(JQueryClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\jquery" />
-  </Target>
-  <Target Name="CopyJQueryUI" BeforeTargets="AfterBuild">
-	<ItemGroup>
-	  <JQueryUIClientFiles Include="$(SolutionDir)node_modules\jquery-ui-dist\jquery-ui.min.js" />
-	  <JQueryUIClientFiles Include="$(SolutionDir)node_modules\jquery-ui-themes\themes\ui-lightness\jquery-ui.css" />
-	  <JQueryUIClientFiles Include="$(SolutionDir)node_modules\jquery-ui-dist\jquery-ui.structure.css" />
-	  <JQueryUIImagesClientFiles Include="$(SolutionDir)node_modules\jquery-ui-themes\themes\ui-lightness\images\*" />
-	</ItemGroup>
-	<Copy SourceFiles="@(JQueryUIClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\jqueryUI" />
-	<Copy SourceFiles="@(JQueryUIImagesClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\jqueryUI\images" />
-  </Target>
   <Target Name="CopyStartRoboRuckus" AfterTargets="AfterPublish">
     <ItemGroup>
       <StartRoboRuckusFiles Include="$(SolutionDir)PiReady\start_roboruckus.sh" />
