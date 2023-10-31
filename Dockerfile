@@ -1,24 +1,22 @@
-FROM ubuntu:jammy AS buildlayer
+FROM mcr.microsoft.com/dotnet/sdk:7.0-jammy AS base
+WORKDIR /app
 
-RUN apt-get update && apt-get install -y git dotnet-sdk-7.0
-
+FROM mcr.microsoft.com/dotnet/sdk:7.0-jammy AS build
 WORKDIR /app
 RUN git clone https://github.com/RoboRuckus/roboruckus-game-server.git
-
 WORKDIR  /app/roboruckus-game-server/src/RoboRuckus
-RUN dotnet build -v m RoboRuckus.csproj
+RUN dotnet build "RoboRuckus.csproj" -v m -c Release -o /app/build
 
+FROM build AS publish
+RUN dotnet publish "RoboRuckus.csproj" -v m -c Release -o /app/publish --no-self-contained
 
-
-FROM ubuntu:jammy
-
-RUN apt-get update && apt-get install -y dotnet-sdk-7.0
-
+FROM  mcr.microsoft.com/dotnet/sdk:7.0-jammy
 WORKDIR /app
-COPY --from=buildlayer /app/roboruckus-game-server/src/RoboRuckus/bin/Debug/net7.0/ /app
-
-COPY --from=buildlayer /app/roboruckus-game-server/src/RoboRuckus/bin/Debug/net7.0/GameConfig/Boards /default/boards
-COPY --from=buildlayer /app/roboruckus-game-server/src/RoboRuckus/bin/Debug/net7.0/wwwroot/images/boards /default/images
+RUN apt-get update && apt-get install -y nano
+COPY --from=publish /app/build/GameConfig/Boards /default/boards
+COPY --from=publish /app/build/wwwroot/images/boards /default/images
+COPY --from=publish /app/build /app
 COPY startup.sh /app/
+ENV ASPNETCORE_URLS=http://*:8082
 
 CMD ["./startup.sh"]

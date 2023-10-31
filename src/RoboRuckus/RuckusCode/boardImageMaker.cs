@@ -70,18 +70,14 @@ namespace RoboRuckus.RuckusCode
             addLasers();
             addCorners();
             addWalls();
-
+            
             // Add the dot to the lower left corner
-            using (Stream FS = new FileStream(_imageRoot + "Dot.png", FileMode.Open))
+            SKBitmap dot = SKBitmap.Decode(_imageRoot + "Dot.png");
+            if (!_printable)
             {
-                SKBitmap bitmap = SKBitmap.Decode(FS);
-                if (!_printable)
-                {
-                    bitmap = bitmap.Resize(new SKSizeI(100, 100), SKFilterQuality.Medium);
-                }
-                SKImage dot = SKImage.FromBitmap(bitmap);
-                _canvas.DrawImage(dot, 0, _board.size[1] * _board_scale);
+                dot = dot.Resize(new SKSizeI(100, 100), SKFilterQuality.Medium);
             }
+            _canvas.DrawBitmap(dot, 0, _board.size[1] * _board_scale);
 
             // Save the canvas
             _canvas.Flush();

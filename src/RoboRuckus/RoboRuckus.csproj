@@ -11,8 +11,8 @@
     <Copyright>Sam Groveman</Copyright>
     <PackageProjectUrl>https://www.roboruckus.com/</PackageProjectUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <RepositoryUrl>https://github.com/ShVerni/RoboRuckus</RepositoryUrl>
-    <PackageLicenseUrl>https://github.com/ShVerni/RoboRuckus/blob/master/LICENSE.md</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/RoboRuckus/roboruckus-game-server</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/RoboRuckus/roboruckus-game-server/blob/main/LICENSE</PackageLicenseUrl>
     <NeutralLanguage />
     <UserSecretsId>762533f3-d4d7-48b2-b245-2a0af316841e</UserSecretsId>
     <PackageLicenseExpression>GNU Affero General Public License v3.0</PackageLicenseExpression>
@@ -71,6 +71,9 @@
     <None Update="Resources\BoardMakerFiles\CWRotator.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+	<None Update="Resources\BoardMakerFiles\Dot.png">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
     <None Update="Resources\BoardMakerFiles\ExpressConveyor.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

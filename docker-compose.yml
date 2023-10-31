@@ -3,13 +3,14 @@ version: '3.2'
 services:
 
   gameserver:
-    image: yeticraft/roboruckus:latest
+    image: roboruckus/game-server:latest
+    container_name: roboruckus
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ${PWD}Boards:/app/GameConfig/Boards
-      - ${PWD}Images:/app/wwwroot/images/boards
+      - ~/Ruckus/Boards:/app/GameConfig/Boards
+      - ~/Ruckus/Images:/app/wwwroot/images/boards
     ports:
       - 8082:8082
 
