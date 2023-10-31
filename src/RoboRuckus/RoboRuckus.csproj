@@ -53,6 +53,9 @@
     <None Update="Resources\BoardMakerFiles\Border.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\BoardMakerFiles\Border-End.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\BoardMakerFiles\CCWRotator.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

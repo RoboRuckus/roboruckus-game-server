@@ -1,6 +1,3 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0-jammy AS base
-WORKDIR /app
-
 FROM mcr.microsoft.com/dotnet/sdk:7.0-jammy AS build
 WORKDIR /app
 RUN git clone https://github.com/RoboRuckus/roboruckus-game-server.git
@@ -12,7 +9,6 @@ RUN dotnet publish "RoboRuckus.csproj" -v m -c Release -o /app/publish --no-self
 
 FROM  mcr.microsoft.com/dotnet/sdk:7.0-jammy
 WORKDIR /app
-RUN apt-get update && apt-get install -y nano
 COPY --from=publish /app/build/GameConfig/Boards /default/boards
 COPY --from=publish /app/build/wwwroot/images/boards /default/images
 COPY --from=publish /app/build /app
