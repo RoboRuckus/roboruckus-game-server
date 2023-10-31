@@ -8,6 +8,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - ARGS= # Set launch arguments here, e.g. --options=botless
     volumes:
       - ~/Ruckus/Boards:/app/GameConfig/Boards
       - ~/Ruckus/Images:/app/wwwroot/images/boards
