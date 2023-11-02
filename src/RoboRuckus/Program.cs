@@ -65,10 +65,7 @@ namespace RoboRuckus
             app.UseFileServer();
 
             // Add SignalR to app.
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHub<playerHub>("/playerHub");
-            });
+            app.MapHub<playerHub>("/playerHub");
 
             // Parse command line arguments.
             if (options != null)
