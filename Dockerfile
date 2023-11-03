@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /app
-RUN git clone https://github.com/RoboRuckus/roboruckus-game-server.git
-WORKDIR /app/roboruckus-game-server/src/RoboRuckus
+COPY src/RoboRuckus /app/src
+WORKDIR /app/src
 RUN dotnet build "RoboRuckus.csproj" -v m -c Release -o /app/build
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0
