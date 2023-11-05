@@ -1,5 +1,4 @@
 version: '3.2'
-
 services:
   gameserver:
     image: roboruckus/game-server:latest
@@ -15,8 +14,3 @@ services:
     ports:
       - 8082:8082
     restart: unless-stopped # Set the server to auto-strat and auto-restart
-
-    #deploy:
-    #  mode: global
-    #  placement:
-    #    constraints: [node.platform.os == linux]

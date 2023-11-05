@@ -6,6 +6,9 @@
 # Debug log file
 src/RoboRuckus/gamelog.txt
 
+# Docker mounts
+Ruckus
+
 # User-specific files
 *.suo
 *.user
