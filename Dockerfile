@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 ARG BUILD_DIR
 WORKDIR /app
 COPY src/RoboRuckus ./src
-WORKDIR ./src
+WORKDIR /app/src
 RUN dotnet build "RoboRuckus.csproj" -v m -c Release -o $BUILD_DIR
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0
