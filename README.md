@@ -22,4 +22,4 @@ While the details of .Net development are beyond the scope of this guide, you ca
 
 ```dotnet publish RoboRuckus.sln -r linux-arm -o PiReady\RoboRuckus -c Release --self-contained -p:PublishSingleFile=true```
 
-Details on how to maually set the game up on a Linux or Raspberry Pi server can be found [here](https://www.roboruckus.com/documentation/setting-up-the-game/#Setting_Up_RoboRuckus).
+Details on how to manually set the game up on a Linux or Raspberry Pi server can be found [here](https://www.roboruckus.com/documentation/setting-up-the-game/#Setting_Up_RoboRuckus).
