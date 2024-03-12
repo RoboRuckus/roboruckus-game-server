@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   gameserver:
-    image: roboruckus/game-server:latest
+    image: ghcr.io/roboruckus/roboruckus-game-server:main
     container_name: roboruckus
     build:
       context: .
