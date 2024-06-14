@@ -68,12 +68,21 @@ namespace RoboRuckus.RuckusCode
                     {
                         return;
                     }
-                    timerStarted = false;
+                    timerStarted = false;                    
 
                     // Execute player moves                  
                     moveCalculator.executeRegisters();
+
+                    // Reset for next round
+                    if (!gameStatus.winner)
+                    {
+                        nextRound();
+                    }
                 }
             }
+            // Checks is a timer needs to be started right away
+            Thread.Sleep(2000);
+            checkTimer();
             // Checks is a timer needs to be started right away
             Thread.Sleep(2000);
             checkTimer();
