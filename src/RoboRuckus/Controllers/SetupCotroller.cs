@@ -5,6 +5,7 @@ using RoboRuckus.RuckusCode;
 using System.Collections.Generic;
 using System.Linq;
 using RoboRuckus.Models;
+using RoboRuckus.Logging;
 using Newtonsoft.Json;
 using System.Threading;
 using System.IO;
@@ -102,19 +103,7 @@ namespace RoboRuckus.Controllers
         {
             gameStatus.gameStarted = true;
             serviceHelpers.signals.dealPlayers();
-            if (serviceHelpers.logging)
-            {
-                List<string> Lines = new List<string>();
-                Lines.Add("---- Start Game ----");
-                Lines.Add("Board name: " + gameStatus.gameBoard.name);
-                Lines.Add("Flags:");
-                foreach (int[] flags in gameStatus.gameBoard.flags)
-                {
-                    Lines.Add(flags[0].ToString() + "," + flags[1].ToString());
-                }
-
-                System.IO.File.AppendAllLines(serviceHelpers.rootPath + serviceHelpers.logfile, Lines.ToArray());
-            }
+            Loggers.loggers.ForEach((Logger) => Logger.LogGameStart(gameStatus.gameBoard, gameStatus.players));
             return Content("Done", "text/plain");
         }
 
@@ -672,10 +661,7 @@ namespace RoboRuckus.Controllers
         public IActionResult Reset(int resetAll = 0)
         {
             serviceHelpers.signals.resetGame(resetAll);
-            if (serviceHelpers.logging)
-            {
-                System.IO.File.AppendAllLines(serviceHelpers.rootPath + serviceHelpers.logfile, new string[] { "---- Game Reset ----" });
-            }
+            Loggers.loggers.ForEach((Logger) => Logger.LogGameEnd(ILogger.GameEndReason.Reset, gameStatus.players));
             return Content("Done", "text/plain");
         }
 

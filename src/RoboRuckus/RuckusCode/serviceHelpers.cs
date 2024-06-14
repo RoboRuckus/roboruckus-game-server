@@ -7,16 +7,6 @@
     {
         private static volatile string _rootPath;
         private static volatile playerSignals _signals;
-        
-        /// <summary>
-        /// Name of the game log file.
-        /// </summary>
-        public static string logfile = "gamelog.txt";
-
-        /// <summary>
-        /// Used to enable logging of game state and player moves.
-        /// </summary>
-        public static bool logging = false;
 
         /// <summary>
         /// A single instance of the player signals class.

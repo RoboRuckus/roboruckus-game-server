@@ -80,8 +80,8 @@ namespace RoboRuckus
                             Console.WriteLine("Botless mode enabled");
                             break;
                         case "logging":
-                            serviceHelpers.logging = true;
                             Console.WriteLine("Logging mode enabled");
+                            Logging.Loggers.AddLogger(new Logging.SQLiteLogger());
                             break;
                     }
                 }

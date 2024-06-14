@@ -70,72 +70,8 @@ namespace RoboRuckus.RuckusCode
                     }
                     timerStarted = false;
 
-                    // List for logging, if enabled
-                    List<string> Lines = new List<string>();
-                    if (serviceHelpers.logging)
-                    {
-                        // Log board state and submitted moves to log file
-                        Lines.Add("---- Start Round ----");
-                        foreach (Player player in gameStatus.players)
-                        {
-                            Lines.Add("Player: " + (player.playerNumber + 1).ToString());
-                            if (player.shutdown == false)
-                            {
-                                Lines.Add("X: " + player.playerRobot.x_pos.ToString());
-                                Lines.Add("Y: " + player.playerRobot.y_pos.ToString());
-                                Lines.Add("Facing: " + player.playerRobot.currentDirection.ToString());
-                                Lines.Add("Damage: " + player.playerRobot.damage.ToString());
-                                Lines.Add("Flags: " + player.playerRobot.flags.ToString());
-                                Lines.Add("Moves: ");
-                                foreach (cardModel card in player.move)
-                                {
-                                    Lines.Add(card.ToString());
-                                }
-                            }
-                            else
-                            {
-                                Lines.Add("Player is shutdown.");
-                            }
-                            Lines.Add("");
-                        }
-                    }
-
                     // Execute player moves                  
                     moveCalculator.executeRegisters();
-
-                    if (serviceHelpers.logging)
-                    {
-                        Lines.Add("---- Final State ----");
-                        foreach (Player player in gameStatus.players)
-                        {
-                            Lines.Add("Player: " + (player.playerNumber + 1).ToString());
-                            Lines.Add("X: " + player.playerRobot.x_pos.ToString());
-                            Lines.Add("Y: " + player.playerRobot.y_pos.ToString());
-                            Lines.Add("Facing: " + player.playerRobot.currentDirection.ToString());
-                            Lines.Add("Damage: " + player.playerRobot.damage.ToString());
-                            Lines.Add("Flags: " + player.playerRobot.flags.ToString());
-                            Lines.Add("Moves: ");
-                            Lines.Add("");
-                        }
-                        Lines.Add("---- End Round ----");
-                    }
-
-                    // Reset for next round
-                    if (!gameStatus.winner)
-                    {
-                        nextRound();
-                    }
-                    else if (serviceHelpers.logging)
-                    {
-                        // Log end of game
-                        Lines.Add("---- Game End ----");
-                    }
-
-                    if (serviceHelpers.logging)
-                    {
-                        // Write log file
-                        File.AppendAllLines(serviceHelpers.rootPath + serviceHelpers.logfile, Lines.ToArray());
-                    }
                 }
             }
             // Checks is a timer needs to be started right away
@@ -184,7 +120,7 @@ namespace RoboRuckus.RuckusCode
         }
 
         /// <summary>
-        /// Sends the current register  being executed to the players
+        /// Sends the current register being executed to the players
         /// </summary>
         /// <param name="register">The register being executed</param>
         public void displayRegister(moveModel[] register)

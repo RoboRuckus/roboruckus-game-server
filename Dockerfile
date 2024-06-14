@@ -1,13 +1,13 @@
 ARG BUILD_DIR=/app/build
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_DIR
 WORKDIR /app
 COPY src/RoboRuckus ./src
 WORKDIR /app/src
 RUN dotnet build "RoboRuckus.csproj" -v m -c Release -o $BUILD_DIR
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0
+FROM mcr.microsoft.com/dotnet/sdk:8.0
 ARG BUILD_DIR
 WORKDIR /app
 COPY --from=build $BUILD_DIR/GameConfig/Boards /default/boards
