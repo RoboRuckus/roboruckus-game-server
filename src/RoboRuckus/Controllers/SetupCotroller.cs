@@ -9,9 +9,7 @@ using RoboRuckus.Logging;
 using Newtonsoft.Json;
 using System.Threading;
 using System.IO;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Newtonsoft.Json.Linq;
-using System.Net.Http.Headers;
+
 
 namespace RoboRuckus.Controllers
 {
@@ -37,7 +35,7 @@ namespace RoboRuckus.Controllers
                 Text = b.name,
                 Value = b.name
             });
-            setupViewModel _model = new setupViewModel { boards = _boards };
+            setupViewModel _model = new() { boards = _boards };
             // Send the board sizes to the view as a JSON object
             string _sizes = "{";
             bool first = true;
@@ -56,6 +54,31 @@ namespace RoboRuckus.Controllers
         }
 
         /// <summary>
+        /// Starts a replay game, for testing
+        /// </summary>
+        /// <returns>Redirect to the monitor</returns>
+        [HttpGet]
+        public IActionResult replay(int logger = 0, int gameID = 0)
+        {
+            if (gameID <= 0)
+            {
+                var loggedGames = Loggers.loggers[logger].GetLoggedGames();
+                // Add interface for selecting game to replay
+            }
+            else
+            {
+                var gameSetup = Loggers.loggers[logger].GetGameSetup(gameID);
+                var gameEvents = Loggers.loggers[logger].getEvents(gameID);
+                Replay.startGame(gameSetup.boad, gameSetup.players);
+                Thread simulation = new(() => Replay.runGame(gameEvents));
+                simulation.Start();
+
+                return RedirectToAction("Monitor");
+            }
+            return View();
+        }
+
+        /// <summary>
         /// Sets up a game
         /// </summary>
         /// <param name="gameData">The game data needed for setup</param>
@@ -65,25 +88,17 @@ namespace RoboRuckus.Controllers
         {
             if (gameData.numberOfPlayers > 0)
             {
-                gameStatus.edgeControl = gameData.edgeControlEnabled;
-                gameStatus.showRegister = gameData.showRegistersEnabled;
-                gameStatus.numPlayers = gameData.numberOfPlayers;
                 Board _board = gameStatus.boards.FirstOrDefault(b => b.name == gameData.selBoard);
                 if (_board != null)
                 {
+                    int[][] flags = null;
                     gameStatus.gameBoard = _board;
                     if (gameData.flags != null && gameData.flags.Length > 1)
-                    {                     
-                        // Assign the flag coordinates, ordered according to the flag number
-                        gameStatus.gameBoard.flags = JsonConvert.DeserializeObject<int[][]>(gameData.flags).OrderBy(f => f[0]).Select(f => new int[] { f[1], f[2] }).ToArray();
-                    }
-                    else
                     {
-                        gameStatus.gameBoard.flags = new int[0][];
+                        // Assign the flag coordinates, ordered according to the flag number
+                        flags = JsonConvert.DeserializeObject<int[][]>(gameData.flags).OrderBy(f => f[0]).Select(f => new int[] { f[1], f[2] }).ToArray();
                     }
-                    gameStatus.boardSizeX = _board.size[0];
-                    gameStatus.boardSizeY = _board.size[1];
-                    gameStatus.gameReady = true;
+                    gameStatus.setupGame(_board, gameData.numberOfPlayers, gameData.showRegistersEnabled, gameData.edgeControlEnabled, flags);
                 }
                 return RedirectToAction("Monitor");
             }
@@ -152,12 +167,9 @@ namespace RoboRuckus.Controllers
                     foreach (int[] enter in entering)
                     {
                         Player sender = gameStatus.players[enter[0]];
-                        Robot bot = sender.playerRobot;
-                        bot.x_pos = enter[1];
-                        bot.y_pos = enter[2];
-                        bot.damage = 0;
-                        bot.currentDirection = (Robot.orientation)Enum.Parse(typeof(Robot.orientation), enter[3].ToString());
-                        sender.dead = false;
+                        int[] location = [ enter[1], enter[2] ];
+                        Robot.orientation facing = (Robot.orientation)Enum.Parse(typeof(Robot.orientation), enter[3].ToString());
+                        serviceHelpers.signals.enterPlayer(sender, location, facing);
                     }
                     serviceHelpers.signals.dealPlayers();
                     gameStatus.playersNeedEntering = false;
@@ -177,7 +189,7 @@ namespace RoboRuckus.Controllers
             {
                 lock (gameStatus.locker)
                 {
-                    if (player != 0 && player <= gameStatus.players.Count())
+                    if (player != 0 && player <= gameStatus.players.Count)
                     {
                         Player caller = gameStatus.players[player - 1];
 
@@ -208,46 +220,12 @@ namespace RoboRuckus.Controllers
         {
             lock (gameStatus.locker)
             {
-                if (player != 0 && player <= gameStatus.players.Count())
+                if (player != 0 && player <= gameStatus.players.Count)
                 {
                     lock (gameStatus.setupLocker)
                     {
                         Player caller = gameStatus.players[player - 1];
-                        Robot bot = caller.playerRobot;
-                        caller.lives = lives;
-                        if (botName != "" && bot.robotName != botName && gameStatus.robotPen.Exists(r => r.robotName == botName))
-                        {
-                            // Get new bot
-                            Robot newBot = gameStatus.robotPen.FirstOrDefault(r => r.robotName == botName);
-                            gameStatus.robotPen.Remove(newBot);
-
-                            // Clear old bot
-                            bot.y_pos = -1;
-                            bot.x_pos = -1;
-                            bot.damage = 0;
-                            bot.flags = 0;
-                            bot.controllingPlayer = null;
-                           
-                            // Wait for bot to acknowledge receipt of order
-                            botSignals.sendReset(bot.robotNum);
-
-                            // Setup new bot
-                            newBot.robotNum = bot.robotNum;
-                            newBot.lastLocation = bot.lastLocation;
-                            gameStatus.robots[newBot.robotNum] = newBot;
-                            gameStatus.robotPen.Add(bot);                            
-
-                            bot = newBot;
-                            bot.controllingPlayer = caller;
-                            caller.playerRobot = bot;
-                            SpinWait.SpinUntil(() => botSignals.sendPlayerAssignment(bot.robotNum, player));
-                        }
-                        // Assign updates
-                        bot.damage = damage;
-                        bot.x_pos = botX;
-                        bot.y_pos = botY;
-                        bot.currentDirection = (Robot.orientation)botDir;
-                        bot.flags = flags;
+                        serviceHelpers.signals.updatePlayer(caller, lives, damage, botX, botY, botDir, botName, flags);
                     }
                     serviceHelpers.signals.updateHealth();
                     return View();
@@ -298,7 +276,7 @@ namespace RoboRuckus.Controllers
                 Text = b.name,
                 Value = b.name
             });
-            boardMakerViewModel _model = new boardMakerViewModel { boards = _boards };
+            boardMakerViewModel _model = new() { boards = _boards };
             return View(_model);
         }
 
@@ -320,10 +298,9 @@ namespace RoboRuckus.Controllers
             lock (gameStatus.locker) 
             {
                 // Create the images for the board
-                using (boardImageMaker maker = new boardImageMaker(board, corners, false))
-                {
-                    maker.createImage();
-                }
+                using boardImageMaker maker = new(board, corners, false);
+                maker.createImage();
+                
             }
             Board oldBoard = gameStatus.boards.FirstOrDefault(x => x.name == newBoard.name);
             if (oldBoard != null)
@@ -333,7 +310,7 @@ namespace RoboRuckus.Controllers
             }
             char _separator = Path.DirectorySeparatorChar;
             // Write new JSON file.
-            using (StreamWriter sw = new StreamWriter(serviceHelpers.rootPath + _separator + "GameConfig" + _separator + "Boards" + _separator + newBoard.name.Replace(" ", "") + ".json", false))
+            using (StreamWriter sw = new(serviceHelpers.rootPath + _separator + "GameConfig" + _separator + "Boards" + _separator + newBoard.name.Replace(" ", "") + ".json", false))
             {
                 sw.Write(newBoard.boardData);
                 sw.Close();
@@ -361,10 +338,8 @@ namespace RoboRuckus.Controllers
             lock (gameStatus.locker)
             {
                 // Create the images for the board
-                using (boardImageMaker maker = new boardImageMaker(board, corners, true))
-                {
-                    maker.createImage();
-                }
+                using boardImageMaker maker = new(board, corners, true);
+                maker.createImage();
             }
             return Content("OK", "text/plain");
         }
@@ -454,7 +429,7 @@ namespace RoboRuckus.Controllers
                             {
                                 bot.robotNum = i;
                                 // Add dummy player to bot, prevents any real player from being assigned to one accidentally while tuning
-                                bot.controllingPlayer = new Player(i);
+                                bot.controllingPlayer = i;
                                 i++;
                                 gameStatus.robots.Add(bot);
                             }
@@ -497,7 +472,7 @@ namespace RoboRuckus.Controllers
         public IActionResult enterBotConfig (int bot)
         {
             string result = "ER";
-            bool success = false;
+            bool success;
             int i = -1;
             do
             {
@@ -515,23 +490,23 @@ namespace RoboRuckus.Controllers
         }
 
         /// <summary>
-        /// Retreives the current settings from a robot
+        /// Retrieves the current settings from a robot
         /// </summary>
         /// <param name="bot">The bot ID</param>
         /// <returns>A JSON encoded string of the robot settings</returns>
         [HttpGet]
         public IActionResult getBotConfig(int bot)
         {
-            string result = "ER";
+            string result;
 
             // Pause to allow robot to get ready
             // Get robot settings
             result = botSignals.getRobotSettings(bot);
             // Cursory check for a JSON looking string
-            if (result != "ER" && result != "" && result.Contains("}}}") && result.Contains("{"))
+            if (result != "ER" && result != "" && result.Contains("}}}") && result.Contains('{'))
             {
                 // Extract the JSON portion of the string only in case there's other stuff in there
-                result = result.Substring(result.IndexOf("{"), result.IndexOf("}}}") + 3);
+                result = result.Substring(result.IndexOf('{'), result.IndexOf("}}}") + 3);
             }
             else
             {
@@ -547,7 +522,7 @@ namespace RoboRuckus.Controllers
         /// </summary>
         /// <param name="bot">The robot to send the config to</param>
         /// <param name="option">The action/parameter to set</param>
-        /// <param name="value">The value to set</param
+        /// <param name="value">The value to set</param>
         /// <param name="robotName">The robot's name</param>
         /// <returns>The response from the robot</returns>
         [HttpGet]
@@ -601,7 +576,7 @@ namespace RoboRuckus.Controllers
                             r.x_pos = -1;
                             r.damage = 0;
                             r.flags = 0;
-                            r.controllingPlayer = null;
+                            r.controllingPlayer = -1;
                             gameStatus.robotPen.Add(r);
                         }
                         gameStatus.robots.Clear();
@@ -624,11 +599,11 @@ namespace RoboRuckus.Controllers
                 string result = "{\"players\": {";
                 bool first = true;
                 string entering = gameStatus.playersNeedEntering ? "1" : "0";
-                Robot[] sorted = gameStatus.robots.OrderBy(r => r.controllingPlayer.playerNumber).ToArray();
+                Robot[] sorted = gameStatus.robots.OrderBy(r => r.controllingPlayer).ToArray();
                 // Build the JSON string
                 foreach (Robot active in sorted)
                 {
-                    if (active.controllingPlayer != null)
+                    if (active.controllingPlayer != -1)
                     {
                         if (!first)
                         {
@@ -636,12 +611,12 @@ namespace RoboRuckus.Controllers
                         }
                         first = false;
                         string reenter = "0";
-                        if (active.controllingPlayer.dead && active.controllingPlayer.lives > 0)
+                        if (gameStatus.players[active.controllingPlayer].dead && gameStatus.players[active.controllingPlayer].lives > 0)
                         {
                             reenter = "1";
                         }
 
-                        result += "\"" + active.controllingPlayer.playerNumber.ToString() + "\": {\"number\": " + active.controllingPlayer.playerNumber.ToString() + ", \"lives\":" + active.controllingPlayer.lives.ToString() + ", \"x\": " + active.x_pos.ToString() + ", \"y\": " + active.y_pos.ToString() + ", \"direction\": " + active.currentDirection.ToString("D") + ", \"damage\": " + active.damage.ToString() + ", \"flags\": " + active.flags.ToString() + ", \"totalFlags\": " + gameStatus.gameBoard.flags.Length.ToString() + ", \"reenter\": " + reenter + ", \"last_x\": " + active.lastLocation[0].ToString() + ", \"last_y\": " + active.lastLocation[1] + ", \"name\": \"" + active.robotName + "\"}";
+                        result += "\"" + active.controllingPlayer.ToString() + "\": {\"number\": " + active.controllingPlayer.ToString() + ", \"lives\":" + gameStatus.players[active.controllingPlayer].lives.ToString() + ", \"x\": " + active.x_pos.ToString() + ", \"y\": " + active.y_pos.ToString() + ", \"direction\": " + active.currentDirection.ToString("D") + ", \"damage\": " + active.damage.ToString() + ", \"flags\": " + active.flags.ToString() + ", \"totalFlags\": " + gameStatus.gameBoard.flags.Length.ToString() + ", \"reenter\": " + reenter + ", \"last_x\": " + active.lastLocation[0].ToString() + ", \"last_y\": " + active.lastLocation[1] + ", \"name\": \"" + active.robotName + "\"}";
                     }
                 }
                 result += "}, \"entering\": " + entering + "}";
@@ -660,8 +635,9 @@ namespace RoboRuckus.Controllers
         [HttpGet]
         public IActionResult Reset(int resetAll = 0)
         {
+            if (!gameStatus.winner)
+                Loggers.loggers.ForEach((Logger) => Logger.LogGameEnd(gameStatus.players));
             serviceHelpers.signals.resetGame(resetAll);
-            Loggers.loggers.ForEach((Logger) => Logger.LogGameEnd(ILogger.GameEndReason.Reset, gameStatus.players));
             return Content("Done", "text/plain");
         }
 

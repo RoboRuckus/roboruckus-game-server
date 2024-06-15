@@ -87,7 +87,7 @@ namespace RoboRuckus.RuckusCode.Movement
             lock (gameStatus.locker)
             {
                 serviceHelpers.signals.showMessage("Wrenches and flags healing");
-                return gameStatus.robots.Where(r => !r.controllingPlayer.dead && (gameStatus.gameBoard.wrenches.Any(w => w[0] == r.x_pos && w[1] == r.y_pos) || gameStatus.gameBoard.flags.Any(f => f[0] == r.x_pos && f[1] == r.y_pos))).ToArray();
+                return gameStatus.robots.Where(r => !gameStatus.players[r.controllingPlayer].dead && (gameStatus.gameBoard.wrenches.Any(w => w[0] == r.x_pos && w[1] == r.y_pos) || gameStatus.gameBoard.flags.Any(f => f[0] == r.x_pos && f[1] == r.y_pos))).ToArray();
             }
         }
 
@@ -104,7 +104,7 @@ namespace RoboRuckus.RuckusCode.Movement
                 for (int i = 0, n = gameStatus.gameBoard.flags.Length; i < n; i++)
                 {
                     int[] flag = gameStatus.gameBoard.flags[i];
-                    Robot bot = gameStatus.robots.FirstOrDefault(r => r.x_pos == flag[0] && r.y_pos == flag[1] && !r.controllingPlayer.shutdown);
+                    Robot bot = gameStatus.robots.FirstOrDefault(r => r.x_pos == flag[0] && r.y_pos == flag[1] && !gameStatus.players[r.controllingPlayer].shutdown);
                     if (bot != null)
                     {
                         found.Add(new int[] { bot.robotNum, i });
@@ -324,7 +324,7 @@ namespace RoboRuckus.RuckusCode.Movement
                     break;
             }
             // See if there's a robot on the space the bot is trying to move to
-            Robot inWay = gameStatus.robots.FirstOrDefault(r => (r.x_pos == destination[0] && r.y_pos == destination[1] && !r.controllingPlayer.dead));
+            Robot inWay = gameStatus.robots.FirstOrDefault(r => (r.x_pos == destination[0] && r.y_pos == destination[1] && !gameStatus.players[r.controllingPlayer].dead));
             if (inWay != null)
             {
                 // Check if the robot in the way is also on a conveyor
@@ -434,19 +434,19 @@ namespace RoboRuckus.RuckusCode.Movement
             {
                 case Robot.orientation.X:
                     toCord = toCord == null ? new int[] { gameStatus.boardSizeX, fromCord[1] } : toCord;
-                    bot = gameStatus.robots.OrderBy(r => r.x_pos).FirstOrDefault(r => (!r.controllingPlayer.dead && r.robotNum != botNumber && r.x_pos >= fromCord[0] && r.x_pos <= toCord[0] && r.y_pos == fromCord[1]));
+                    bot = gameStatus.robots.OrderBy(r => r.x_pos).FirstOrDefault(r => (!gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.x_pos >= fromCord[0] && r.x_pos <= toCord[0] && r.y_pos == fromCord[1]));
                     break;
                 case Robot.orientation.Y:
                     toCord = toCord == null ? new int[] { fromCord[0], gameStatus.boardSizeY } : toCord;
-                    bot = gameStatus.robots.OrderBy(r => r.y_pos).FirstOrDefault(r => (!r.controllingPlayer.dead && r.robotNum != botNumber && r.y_pos >= fromCord[1] && r.y_pos <= toCord[1] && r.x_pos == fromCord[0]));
+                    bot = gameStatus.robots.OrderBy(r => r.y_pos).FirstOrDefault(r => (!gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.y_pos >= fromCord[1] && r.y_pos <= toCord[1] && r.x_pos == fromCord[0]));
                     break;
                 case Robot.orientation.NEG_X:
                     toCord = toCord == null ? new int[] { 0, fromCord[1] } : toCord;
-                    bot = gameStatus.robots.OrderByDescending(r => r.x_pos).FirstOrDefault(r => (!r.controllingPlayer.dead && r.robotNum != botNumber && r.x_pos <= fromCord[0] && r.x_pos >= toCord[0] && r.y_pos == fromCord[1]));
+                    bot = gameStatus.robots.OrderByDescending(r => r.x_pos).FirstOrDefault(r => (!gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.x_pos <= fromCord[0] && r.x_pos >= toCord[0] && r.y_pos == fromCord[1]));
                     break;
                 case Robot.orientation.NEG_Y:
                     toCord = toCord == null ? new int[] { fromCord[0], 0 } : toCord;
-                    bot = gameStatus.robots.OrderByDescending(r => r.y_pos).FirstOrDefault(r => (!r.controllingPlayer.dead && r.robotNum != botNumber && r.y_pos <= fromCord[1] && r.y_pos >= toCord[1] && r.x_pos == fromCord[0]));
+                    bot = gameStatus.robots.OrderByDescending(r => r.y_pos).FirstOrDefault(r => (!gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.y_pos <= fromCord[1] && r.y_pos >= toCord[1] && r.x_pos == fromCord[0]));
                     break;
             }
 

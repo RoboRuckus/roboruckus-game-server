@@ -36,7 +36,7 @@ namespace RoboRuckus.RuckusCode.Movement
                 // Loop through each register
                 for (int i = 0; i < 5; i++)
                 {
-                    if (gameStatus.robots.Any(r => !r.controllingPlayer.dead))
+                    if (gameStatus.robots.Any(r => !gameStatus.players[r.controllingPlayer].dead))
                     {
                         // Move robots
                         executePlayerMoves(i);
@@ -77,7 +77,7 @@ namespace RoboRuckus.RuckusCode.Movement
                             {
                                 bot.damage--;
                                 // Update "archive marker" (a.k.a. new respawn location)
-                                if (!bot.controllingPlayer.shutdown)
+                                if (!gameStatus.players[bot.controllingPlayer].shutdown)
                                 {
                                     bot.lastLocation[0] = bot.x_pos;
                                     bot.lastLocation[1] = bot.y_pos;
@@ -527,7 +527,7 @@ namespace RoboRuckus.RuckusCode.Movement
             foreach (moveModel move in register)
             {
                 // Check if robot has died during the register
-                if (!move.bot.controllingPlayer.dead)
+                if (!gameStatus.players[move.bot.controllingPlayer].dead)
                 {
                     serviceHelpers.signals.displayMove(move, regsiter);
                     orders = calculateMove(move);
@@ -549,6 +549,7 @@ namespace RoboRuckus.RuckusCode.Movement
         /// </summary>
         /// <param name="fromCord">[x,y] The coordinate the bot will be moving from</param>
         /// <param name="toCord">[x,y] The coordinate the bot will be moving to</param>
+        /// <param name="direction">The direction to search</param>
         /// <returns>True if there's a non-bot obstacle between those two spaces</returns>
         private static bool isObstacle(int[] fromCord, int[] toCord, Robot.orientation direction)
         {

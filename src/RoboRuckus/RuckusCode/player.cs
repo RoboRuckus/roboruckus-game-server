@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
-using RoboRuckus.RuckusCode;
+using RoboRuckus.Logging;
 
 namespace RoboRuckus.RuckusCode
 {
-    public class Player
+    public class Player(byte Number)
     {
         /// <summary>
         /// Zero ordered player number
         /// </summary>
-        public byte playerNumber;
+        public byte playerNumber = Number;
 
         public Robot playerRobot = null;
 
@@ -25,7 +25,7 @@ namespace RoboRuckus.RuckusCode
         /// <summary>
         /// The player's currently locked cards
         /// </summary>
-        public List<byte> lockedCards = new List<byte>();
+        public List<byte> lockedCards = [];
 
         /// <summary>
         /// True if player is currently shut down
@@ -55,34 +55,29 @@ namespace RoboRuckus.RuckusCode
             }
             set
             {
-                lock(gameStatus.locker)
+                if (gameStatus.gameStarted)
                 {
-                    if (value == true)
+                    lock (gameStatus.locker)
                     {
-                        foreach (byte card in lockedCards)
+                        if (value == true)
                         {
-                            gameStatus.lockedCards.Remove(card);
+                            foreach (byte card in lockedCards)
+                            {
+                                gameStatus.lockedCards.Remove(card);
+                            }
+                            lockedCards.Clear();
+                            playerRobot.x_pos = -1;
+                            playerRobot.y_pos = -1;
+                            if (lives > 0 && !_dead)
+                            {
+                                lives--;
+                            }
+                            Loggers.loggers.ForEach((Logger) => Logger.LogBotDeath(this));
                         }
-                        lockedCards.Clear();
-                        playerRobot.x_pos = -1;
-                        playerRobot.y_pos = -1;
-                        if (lives > 0 && !_dead)
-                        {
-                            lives--;
-                        }
+                        _dead = value;
                     }
-                    _dead = value;
                 }
             }
-        }
-
-        /// <summary>
-        /// Player constructor. A player number is required.
-        /// </summary>
-        /// <param name="Number">The player number</param>
-        public Player(byte Number)
-        {
-            playerNumber = Number;
         }
     }
 }

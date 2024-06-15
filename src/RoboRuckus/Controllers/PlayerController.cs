@@ -88,7 +88,7 @@ namespace RoboRuckus.Controllers
                 return RedirectToAction("addPlayer", new { player });
             }
             // Check if player is already set up
-            else if (gameStatus.players[player - 1].playerRobot != null && reset !=1)
+            else if (gameStatus.players[player - 1].playerRobot != null && reset != 1)
             {
                 return RedirectToAction("Index", new { player });
             }
@@ -122,7 +122,7 @@ namespace RoboRuckus.Controllers
                 lock (gameStatus.setupLocker)
                 {
                     // Check if robot was already assigned
-                    if (!gameStatus.assignBot(playerData.player, playerData.botName))
+                    if (!gameStatus.assignBot(playerData.player - 1, playerData.botName))
                     {
                         return RedirectToAction("playerSetup", new { playerData.player });
                     }
@@ -155,14 +155,14 @@ namespace RoboRuckus.Controllers
             bool first = true;
             foreach (Robot active in gameStatus.robots)
             {
-                if (active.controllingPlayer != null)
+                if (active.controllingPlayer != -1)
                 {
                     if (!first)
                     {
                         result += ",";
                     }
                     first = false;
-                    result += "\"" + active.controllingPlayer.playerNumber.ToString() + "\": {\"number\": " + active.controllingPlayer.playerNumber.ToString() + ",\"x\": " + active.x_pos.ToString() + ",\"y\": " + active.y_pos.ToString() + ",\"direction\": " + active.currentDirection.ToString("D") + "}";
+                    result += "\"" + active.controllingPlayer.ToString() + "\": {\"number\": " + active.controllingPlayer.ToString() + ",\"x\": " + active.x_pos.ToString() + ",\"y\": " + active.y_pos.ToString() + ",\"direction\": " + active.currentDirection.ToString("D") + "}";
                 }
             }
             result += "}, \"botNames\": " + JsonConvert.SerializeObject(gameStatus.robotPen.Select(r => r.robotName).ToArray()) + "}";
