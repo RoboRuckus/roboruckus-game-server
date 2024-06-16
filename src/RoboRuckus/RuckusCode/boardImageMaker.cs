@@ -2,10 +2,12 @@
 using System.IO;
 using System.Linq;
 using SkiaSharp;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RoboRuckus.RuckusCode
 {
+    /// <summary>
+    /// Class for creating a new board image
+    /// </summary>
     public class boardImageMaker : IDisposable
     {
         private  SKBitmap _boardImage;
@@ -23,7 +25,7 @@ namespace RoboRuckus.RuckusCode
         /// </summary>
         /// <param name="board">The board file to base the image off of</param>
         /// <param name="corners">Additional info for corner walls</param>
-        /// <param name="printable">Should the image be a full-szie printable image.</param>
+        /// <param name="printable">Should the image be a full-size printable image</param>
         public boardImageMaker(Board board, int[][] corners, bool printable)
         {
             // Initialize values
@@ -51,10 +53,8 @@ namespace RoboRuckus.RuckusCode
         }
 
         /// <summary>
-        /// Creates a print-ready board image
+        /// Creates a board image
         /// </summary>
-        /// <param name="board">The board object to make the image from</param>
-        /// <param name="corners">The locations of the corner walls</param>
         /// <returns>True on success</returns>
         public bool createImage()
         {            

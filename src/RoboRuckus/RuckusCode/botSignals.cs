@@ -144,7 +144,7 @@ namespace RoboRuckus.RuckusCode
             }
         }
 
-        // <summary>
+        /// <summary>
         /// Gets the current configuration settings from a robot in setup mode
         /// </summary>
         /// <param name="botNumber">The robot to get the settings from</param>

@@ -1,14 +1,18 @@
 ﻿using RoboRuckus.RuckusCode;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace RoboRuckus.Logging
 {
+    /// <summary>
+    /// Class to replay logged games
+    /// </summary>
     public static class Replay
     {
-
         /// <summary>
         /// Set to true to abort any currently running replay simulation after the next event completes
         /// </summary>
@@ -21,13 +25,37 @@ namespace RoboRuckus.Logging
         /// <param name="players">The players configured at the start of the game</param>
         public static void startGame(Board board, List<Player> players)
         {
-            // Disable logging of logged game
+            // Cache current loggers and disable logging of logged game
             Loggers.loggers.ForEach(logger =>
             {
                 _buffer.Add(logger);
             });
             Loggers.loggers.Clear();
-            // setup the game
+
+            // Check if game board already exists
+            if (gameStatus.boards.FirstOrDefault(b => b.name == board.name) is null)
+            {
+                // Create new game board, note it will not make pretty corner walls.
+                // Board can be edited after creation to add corner walls.
+                boardImageMaker newBoardMaker = new(board, [], false);
+                newBoardMaker.createImage();
+                newBoardMaker.Dispose();
+                
+                // Temporarily remove flags to make board JSON
+                int[][] flagBuffer = board.flags;
+                board.flags = [];
+
+                // Convert to JSON
+                string newBoard = JsonConvert.SerializeObject(board);
+
+                // Write new JSON file.
+                char _separator = Path.DirectorySeparatorChar;
+                using StreamWriter sw = new(serviceHelpers.rootPath + _separator + "GameConfig" + _separator + "Boards" + _separator + board.name.Replace(" ", "") + ".json", false);               
+                sw.Write(newBoard);
+                sw.Close();
+            }
+
+            // Setup the game
             gameStatus.setupGame(board, players.Count, false, false, board.flags);
             
             // Add each player to the game
@@ -88,7 +116,7 @@ namespace RoboRuckus.Logging
                         break;                        
                 }
                 Thread.Sleep(250);
-            });
+            };
         }
 
         /// <summary>
@@ -134,6 +162,7 @@ namespace RoboRuckus.Logging
         public static void enterPlayer(Player player)
         {
             serviceHelpers.signals.enterPlayer(gameStatus.players[player.playerNumber], [ player.playerRobot.x_pos, player.playerRobot.y_pos ], player.playerRobot.currentDirection);
+            gameStatus.playersNeedEntering = false;
         }
 
         /// <summary>
