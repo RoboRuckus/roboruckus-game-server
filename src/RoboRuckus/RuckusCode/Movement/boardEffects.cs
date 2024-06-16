@@ -188,12 +188,12 @@ namespace RoboRuckus.RuckusCode.Movement
                 if (express)
                 {
                     serviceHelpers.signals.showMessage("Express conveyors moving");
-                    onConveyors = gameStatus.robots.Where(r => gameStatus.gameBoard.expressConveyors.Any(c => (.x_pos == c.location[0] && r.y_pos == c.location[1])).ToArray();
+                    onConveyors = gameStatus.robots.Where(r => gameStatus.gameBoard.expressConveyors.Any(c => r.x_pos == c.location[0] && r.y_pos == c.location[1])).ToArray();
                 }
                 else
                 {
                     serviceHelpers.signals.showMessage("All conveyors moving");
-                    onConveyors = gameStatus.robots.Where(r => gameStatus.gameBoard.conveyors.Any(c => r.x_pos == c.location[0] && r.y_pos == c.location[1]) || (gameStatus.gameBoard.expressConveyors.Any(c => (r.x_pos == c.location[0] && r.y_pos == c.location[1])))).ToArray();
+                    onConveyors = gameStatus.robots.Where(r => gameStatus.gameBoard.conveyors.Any(c => r.x_pos == c.location[0] && r.y_pos == c.location[1]) || gameStatus.gameBoard.expressConveyors.Any(c => r.x_pos == c.location[0] && r.y_pos == c.location[1])).ToArray();
                 }
                 List<ConveyorModel> moved = new List<ConveyorModel>();
 
