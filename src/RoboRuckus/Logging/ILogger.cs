@@ -18,6 +18,7 @@ namespace RoboRuckus.Logging
             gameEnd,
             roundStart,
             botDeath,
+            playerAdded,
             playerEntering,
             playerUpdate
         }
@@ -44,8 +45,14 @@ namespace RoboRuckus.Logging
         /// <summary>
         /// Log the death of a robot
         /// </summary>
-        /// <param name="bot">The player whose bot died</param>
+        /// <param name="player">The player whose bot died</param>
         public void LogBotDeath(Player player);
+
+        /// <summary>
+        /// Log a player being added to a running game
+        /// </summary>
+        /// <param name="player">The player being added</param>
+        public void LogPlayerAdded(Player player);
 
         /// <summary>
         /// Log a player re-entering the game from death or otherwise

@@ -67,7 +67,7 @@ namespace RoboRuckus.RuckusCode
             set
             {
                 // Only attempt to alter players if the controlling player exists
-                if (gameStatus.gameStarted && gameStatus.players.Count - 1 > controllingPlayer)
+                if (gameStatus.gameStarted && gameStatus.players.Count > controllingPlayer)
                 {
                     // Only one thread should be issuing orders and/or modifying damage at a time
                     lock (gameStatus.locker)

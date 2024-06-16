@@ -16,14 +16,14 @@ namespace RoboRuckus.Logging
         /// <summary>
         /// Set to true to abort any currently running replay simulation after the next event completes
         /// </summary>
-        public static bool abortReplay = false;
+        public static bool AbortReplay = false;
 
         /// <summary>
         /// Start a replay game
         /// </summary>
         /// <param name="board">The board to play on</param>
         /// <param name="players">The players configured at the start of the game</param>
-        public static void startGame(Board board, List<Player> players)
+        public static void StartGame(Board board, List<Player> players)
         {
             // Cache current loggers and disable logging of logged game
             Loggers.loggers.ForEach(logger =>
@@ -56,63 +56,51 @@ namespace RoboRuckus.Logging
             }
 
             // Setup the game
-            gameStatus.setupGame(board, players.Count, false, false, board.flags);
+            gameStatus.SetupGame(board, 12, false, false, board.flags);
             
             // Add each player to the game
             players.ForEach(player =>
             {
-                gameStatus.addPlayer();
-
-                // See if the player's robot is available, if not, assign a random one. This assumes there are enough bots available
-                string botName = player.playerRobot.robotName;
-                if (gameStatus.robotPen.FirstOrDefault(r => r.robotName == botName) is null)
-                {
-                    Random randomBot = new Random();
-                    botName = gameStatus.robotPen[randomBot.Next(gameStatus.robotPen.Count - 1)].robotName;
-                }
-                gameStatus.assignBot(player.playerNumber, botName);
-
-                // Configure robot position
-                Robot playerBot = gameStatus.players[player.playerNumber].playerRobot;
-                playerBot.x_pos = player.playerRobot.x_pos;
-                playerBot.y_pos = player.playerRobot.y_pos;
-                playerBot.lastLocation = player.playerRobot.lastLocation;
-                playerBot.currentDirection = player.playerRobot.currentDirection;
+                AddPlayer(player);
                 Thread.Sleep(250);
             });
             gameStatus.gameStarted = true;
         }
 
         /// <summary>
-        /// Runs a loop that simulates a series of game events
+        /// Execute a series simulates a series of game events.
+        /// Execution can be halted after the next event by setting the AbortReplay property in this class to true.
         /// </summary>
         /// <param name="events">The list of eventType and list of players pairs</param>
-        public static void runGame(List<(ILogger.eventTypes, List<Player>)> events)
+        public static void RunGame(List<(ILogger.eventTypes, List<Player>)> events)
         {
-            abortReplay = false;
+            AbortReplay = false;
             Thread.Sleep(3000);
             foreach (var _event in events) 
             {
-                if (abortReplay)
+                if (AbortReplay)
                     break;
                 switch(_event.Item1)
                 {
                     case ILogger.eventTypes.roundStart:
-                        startRound(_event.Item2);
+                        StartRound(_event.Item2);
                         Thread.Sleep(1000);
                         SpinWait.SpinUntil(() => !gameStatus.roundRunning);
                         break;
                     case ILogger.eventTypes.playerUpdate:
-                        updatePlayer(_event.Item2[0]);
+                        UpdatePlayer(_event.Item2[0]);
+                        break;
+                    case ILogger.eventTypes.playerAdded:
+                        AddPlayer(_event.Item2[0]);
                         break;
                     case ILogger.eventTypes.playerEntering:
-                        enterPlayer(_event.Item2[0]);
+                        EnterPlayer(_event.Item2[0]);
                         break;
                     case ILogger.eventTypes.botDeath:
-                        robotDied(_event.Item2[0]);
+                        RobotDied(_event.Item2[0]);
                         break;
                     case ILogger.eventTypes.gameEnd:
-                        gameEnded(_event.Item2);
+                        GameEnded(_event.Item2);
                         break;                        
                 }
                 Thread.Sleep(250);
@@ -123,7 +111,7 @@ namespace RoboRuckus.Logging
         /// Start a round of play
         /// </summary>
         /// <param name="players">The players' status at the start of the round</param>
-        public static void startRound(List<Player> players)
+        public static void StartRound(List<Player> players)
         {
             players.ForEach(player =>
             {
@@ -136,7 +124,7 @@ namespace RoboRuckus.Logging
         /// Handles a dead robot. Nothing to do here yet
         /// </summary>
         /// <param name="player"></param>
-        public static void robotDied(Player player)
+        public static void RobotDied(Player player)
         {
             return;
         }
@@ -144,8 +132,8 @@ namespace RoboRuckus.Logging
         /// <summary>
         /// Handles the end of the game. Nothing to do here yet
         /// </summary>
-        /// <param name="players"></param>
-        public static void gameEnded(List<Player> players)
+        /// <param name="players">The final player states</param>
+        public static void GameEnded(List<Player> players)
         {
             // Re-enable game logging
             _buffer.ForEach(logger =>
@@ -156,10 +144,41 @@ namespace RoboRuckus.Logging
         }
 
         /// <summary>
+        /// Adds a player to the game
+        /// </summary>
+        /// <param name="player">The player to add</param>
+        /// <returns>False if a player could not be added</returns>
+        public static bool AddPlayer(Player player) 
+        {
+            if (gameStatus.addPlayer() == 0)
+            {
+                AbortReplay = true;
+                return false;
+            }
+
+            // See if the player's robot is available, if not, assign a random one. This assumes there are enough bots available
+            string botName = player.playerRobot.robotName;
+            if (gameStatus.robotPen.FirstOrDefault(r => r.robotName == botName) is null)
+            {
+                Random randomBot = new();
+                botName = gameStatus.robotPen[randomBot.Next(gameStatus.robotPen.Count - 1)].robotName;
+            }
+            gameStatus.assignBot(player.playerNumber, botName);
+
+            // Configure robot position
+            Robot playerBot = gameStatus.players[player.playerNumber].playerRobot;
+            playerBot.x_pos = player.playerRobot.x_pos;
+            playerBot.y_pos = player.playerRobot.y_pos;
+            playerBot.lastLocation = player.playerRobot.lastLocation;
+            playerBot.currentDirection = player.playerRobot.currentDirection;
+            return true;
+        }
+
+        /// <summary>
         /// Re-enter a player that has died
         /// </summary>
-        /// <param name="player">the player to enter</param>
-        public static void enterPlayer(Player player)
+        /// <param name="player">The player to enter</param>
+        public static void EnterPlayer(Player player)
         {
             serviceHelpers.signals.enterPlayer(gameStatus.players[player.playerNumber], [ player.playerRobot.x_pos, player.playerRobot.y_pos ], player.playerRobot.currentDirection);
             gameStatus.playersNeedEntering = false;
@@ -169,11 +188,11 @@ namespace RoboRuckus.Logging
         /// Updates the settings for a player
         /// </summary>
         /// <param name="player">the player to update</param>
-        public static void updatePlayer(Player player)
+        public static void UpdatePlayer(Player player)
         {
             serviceHelpers.signals.updatePlayer(gameStatus.players[player.playerNumber], player.lives, player.playerRobot.damage, player.playerRobot.x_pos, player.playerRobot.y_pos, (int)player.playerRobot.currentDirection, player.playerRobot.robotName, player.playerRobot.flags);
         }
 
-        private static List<ILogger> _buffer = [];
+        private static readonly List<ILogger> _buffer = [];
     }
 }

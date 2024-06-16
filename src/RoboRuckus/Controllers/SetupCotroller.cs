@@ -69,8 +69,8 @@ namespace RoboRuckus.Controllers
             {
                 var gameSetup = Loggers.loggers[logger].GetGameSetup(gameID);
                 var gameEvents = Loggers.loggers[logger].getEvents(gameID);
-                Replay.startGame(gameSetup.boad, gameSetup.players);
-                Thread simulation = new(() => Replay.runGame(gameEvents));
+                Replay.StartGame(gameSetup.boad, gameSetup.players);
+                Thread simulation = new(() => Replay.RunGame(gameEvents));
                 simulation.Start();
 
                 return RedirectToAction("Monitor");
@@ -91,14 +91,14 @@ namespace RoboRuckus.Controllers
                 Board _board = gameStatus.boards.FirstOrDefault(b => b.name == gameData.selBoard);
                 if (_board != null)
                 {
-                    int[][] flags = null;
+                    int[][] flags = [];
                     gameStatus.gameBoard = _board;
                     if (gameData.flags != null && gameData.flags.Length > 1)
                     {
                         // Assign the flag coordinates, ordered according to the flag number
                         flags = JsonConvert.DeserializeObject<int[][]>(gameData.flags).OrderBy(f => f[0]).Select(f => new int[] { f[1], f[2] }).ToArray();
                     }
-                    gameStatus.setupGame(_board, gameData.numberOfPlayers, gameData.showRegistersEnabled, gameData.edgeControlEnabled, flags);
+                    gameStatus.SetupGame(_board, gameData.numberOfPlayers, gameData.showRegistersEnabled, gameData.edgeControlEnabled, flags);
                 }
                 return RedirectToAction("Monitor");
             }
@@ -247,7 +247,7 @@ namespace RoboRuckus.Controllers
                 Player _player = gameStatus.players[player - 1];
                 foreach (byte card in _player.cards)
                 {
-                    gameStatus.deltCards.Remove(card);
+                    gameStatus.dealtCards.Remove(card);
                 }
                 _player.cards = null;
                 serviceHelpers.signals.dealPlayers(player);

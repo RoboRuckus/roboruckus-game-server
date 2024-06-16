@@ -74,6 +74,7 @@ namespace RoboRuckus.Hubs
         /// </summary>
         /// <param name="playerNum">The player number sending the cards</param>
         /// <param name="cards">The cards being sent</param>
+        /// <param name="shutdown">Set to true if a bot wants to shutdown this round</param>
         public void sendCards(int playerNum, cardModel[] cards, bool shutdown)
         {
             Player sender = gameStatus.players[playerNum - 1];

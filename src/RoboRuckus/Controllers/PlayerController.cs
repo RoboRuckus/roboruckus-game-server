@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using RoboRuckus.Logging;
 using RoboRuckus.Models;
 using RoboRuckus.RuckusCode;
 using System.Linq;
@@ -79,6 +80,7 @@ namespace RoboRuckus.Controllers
         /// Set's up a player
         /// </summary>
         /// <param name="player">The player number</param>
+        /// <param name="reset">Set to 1 to indicate this was called from a game reset action</param>
         /// <returns>The view</returns>
         public IActionResult playerSetup(int player = 0, int reset = 0)
         {
@@ -136,8 +138,13 @@ namespace RoboRuckus.Controllers
                         Player sender = gameStatus.players[playerData.player - 1];
                         sender.playerRobot.x_pos = playerData.botX;
                         sender.playerRobot.y_pos = playerData.botY;
-                        sender.playerRobot.lastLocation = new int[] { playerData.botX, playerData.botY };
+                        sender.playerRobot.lastLocation = [ playerData.botX, playerData.botY ];
                         sender.playerRobot.currentDirection = (Robot.orientation)playerData.botDir;
+                        // Log an in-game player addition
+                        if (gameStatus.gameStarted)
+                        {
+                            Loggers.loggers.ForEach((Logger) => Logger.LogPlayerAdded(sender));
+                        }
                         return RedirectToAction("Index", new { playerData.player });
                     }
                 }

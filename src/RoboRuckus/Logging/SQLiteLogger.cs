@@ -98,6 +98,13 @@ namespace RoboRuckus.Logging
             addEvent(ILogger.eventTypes.roundStart, JsonConvert.SerializeObject(players, settings));
         }
 
+        public void LogPlayerAdded(Player player) 
+        {
+            JsonSerializerSettings settings = new();
+            settings.Converters.Add(new IPAddressConverter());
+            addEvent(ILogger.eventTypes.playerAdded, JsonConvert.SerializeObject(new List<Player> { player }, settings));
+        }
+
         public void LogBotDeath(Player player)
         {
             JsonSerializerSettings settings = new();

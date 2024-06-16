@@ -21,11 +21,11 @@ namespace RoboRuckus.RuckusCode.Movement
             {
                 serviceHelpers.signals.showMessage("Turntables Rotating");
                 // Find all bots on turntables
-                Robot[] bots = gameStatus.robots.Where(r => gameStatus.gameBoard.turntables.Any(t => (t.location[0] == r.x_pos && t.location[1] == r.y_pos))).ToArray();
+                Robot[] bots = gameStatus.robots.Where(r => gameStatus.gameBoard.turntables.Any(t => t.location[0] == r.x_pos && t.location[1] == r.y_pos)).ToArray();
                 foreach (Robot _bot in bots)
                 {
                     // Determine in which direction to rotate that bot, and craft the movement
-                    Turntable table = gameStatus.gameBoard.turntables.Single(t => (t.location[0] == _bot.x_pos && t.location[1] == _bot.y_pos));
+                    Turntable table = gameStatus.gameBoard.turntables.Single(t => t.location[0] == _bot.x_pos && t.location[1] == _bot.y_pos);
                     moveModel movement = new moveModel
                     {
                         card = new cardModel
@@ -107,7 +107,7 @@ namespace RoboRuckus.RuckusCode.Movement
                     Robot bot = gameStatus.robots.FirstOrDefault(r => r.x_pos == flag[0] && r.y_pos == flag[1] && !gameStatus.players[r.controllingPlayer].shutdown);
                     if (bot != null)
                     {
-                        found.Add(new int[] { bot.robotNum, i });
+                        found.Add([ bot.robotNum, i ]);
                     }
                 }
                 return found;
@@ -142,28 +142,28 @@ namespace RoboRuckus.RuckusCode.Movement
                 switch (direction)
                 {
                     case Robot.orientation.X:
-                        int[][] found = gameStatus.gameBoard.walls.OrderBy(w => w[0][0]).ThenBy(w => w[1][0]).FirstOrDefault(w => ((w[0][0] >= fromCord[0] && w[0][0] <= toCord[0]) && (w[1][0] >= fromCord[0] && w[1][0] <= toCord[0]) && (w[0][1] == fromCord[1] && w[1][1] == fromCord[1])));
+                        int[][] found = gameStatus.gameBoard.walls.OrderBy(w => w[0][0]).ThenBy(w => w[1][0]).FirstOrDefault(w => w[0][0] >= fromCord[0] && w[0][0] <= toCord[0] && w[1][0] >= fromCord[0] && w[1][0] <= toCord[0] && w[0][1] == fromCord[1] && w[1][1] == fromCord[1]);
                         if (found != null)
                         {
                             wall = new int[] { found[0][0] < found[1][0] ? found[0][0] : found[1][0], found[0][1] };
                         }
                         break;
                     case Robot.orientation.Y:
-                        found = gameStatus.gameBoard.walls.OrderBy(w => w[0][1]).ThenBy(w => w[1][1]).FirstOrDefault(w => ((w[0][1] >= fromCord[1] && w[0][1] <= toCord[1]) && (w[1][1] >= fromCord[1] && w[1][1] <= toCord[1]) && (w[0][0] == fromCord[0] && w[1][0] == fromCord[0])));
+                        found = gameStatus.gameBoard.walls.OrderBy(w => w[0][1]).ThenBy(w => w[1][1]).FirstOrDefault(w => w[0][1] >= fromCord[1] && w[0][1] <= toCord[1] && w[1][1] >= fromCord[1] && w[1][1] <= toCord[1] && w[0][0] == fromCord[0] && w[1][0] == fromCord[0]);
                         if (found != null)
                         {
                             wall = new int[] { found[0][1] < found[1][1] ? found[0][1] : found[1][1], found[0][0] };
                         }
                         break;
                     case Robot.orientation.NEG_X:
-                        found = gameStatus.gameBoard.walls.OrderByDescending(w => w[0][0]).ThenByDescending(w => w[1][0]).FirstOrDefault(w => ((w[0][0] <= fromCord[0] && w[0][0] >= toCord[0]) && (w[1][0] <= fromCord[0] && w[1][0] >= toCord[0]) && (w[0][1] == fromCord[1] && w[1][1] == fromCord[1])));
+                        found = gameStatus.gameBoard.walls.OrderByDescending(w => w[0][0]).ThenByDescending(w => w[1][0]).FirstOrDefault(w => w[0][0] <= fromCord[0] && w[0][0] >= toCord[0] && w[1][0] <= fromCord[0] && w[1][0] >= toCord[0] && w[0][1] == fromCord[1] && w[1][1] == fromCord[1]);
                         if (found != null)
                         {
                             wall = new int[] { found[0][0] > found[1][0] ? found[0][0] : found[1][0], found[0][1] };
                         }
                         break;
                     case Robot.orientation.NEG_Y:
-                        found = gameStatus.gameBoard.walls.OrderByDescending(w => w[0][1]).ThenByDescending(w => w[1][1]).FirstOrDefault(w => ((w[0][1] <= fromCord[1] && w[0][1] >= toCord[1]) && (w[1][1] <= fromCord[1] && w[1][1] >= toCord[1]) && (w[0][0] == fromCord[0] && w[1][0] == fromCord[0])));
+                        found = gameStatus.gameBoard.walls.OrderByDescending(w => w[0][1]).ThenByDescending(w => w[1][1]).FirstOrDefault(w => w[0][1] <= fromCord[1] && w[0][1] >= toCord[1] && w[1][1] <= fromCord[1] && w[1][1] >= toCord[1] && w[0][0] == fromCord[0] && w[1][0] == fromCord[0]);
                         if (found != null)
                         {
                             wall = new int[] { found[0][1] > found[1][1] ? found[0][1] : found[1][1], found[0][0] };
@@ -188,12 +188,12 @@ namespace RoboRuckus.RuckusCode.Movement
                 if (express)
                 {
                     serviceHelpers.signals.showMessage("Express conveyors moving");
-                    onConveyors = gameStatus.robots.Where(r => (gameStatus.gameBoard.expressConveyors.Any(c => (r.x_pos == c.location[0] && r.y_pos == c.location[1])))).ToArray();
+                    onConveyors = gameStatus.robots.Where(r => gameStatus.gameBoard.expressConveyors.Any(c => (.x_pos == c.location[0] && r.y_pos == c.location[1])).ToArray();
                 }
                 else
                 {
                     serviceHelpers.signals.showMessage("All conveyors moving");
-                    onConveyors = gameStatus.robots.Where(r => (gameStatus.gameBoard.conveyors.Any(c => (r.x_pos == c.location[0] && r.y_pos == c.location[1]))) || (gameStatus.gameBoard.expressConveyors.Any(c => (r.x_pos == c.location[0] && r.y_pos == c.location[1])))).ToArray();
+                    onConveyors = gameStatus.robots.Where(r => gameStatus.gameBoard.conveyors.Any(c => r.x_pos == c.location[0] && r.y_pos == c.location[1]) || (gameStatus.gameBoard.expressConveyors.Any(c => (r.x_pos == c.location[0] && r.y_pos == c.location[1])))).ToArray();
                 }
                 List<ConveyorModel> moved = new List<ConveyorModel>();
 
@@ -204,7 +204,7 @@ namespace RoboRuckus.RuckusCode.Movement
                 }
 
                 // Check to see if any robots are trying to move into the same space
-                ConveyorModel[] collisions = moved.Where(r => (moved.Any(q => (r != q && q.destination[0] == r.destination[0] && q.destination[1] == r.destination[1])))).ToArray();
+                ConveyorModel[] collisions = moved.Where(r => moved.Any(q => r != q && q.destination[0] == r.destination[0] && q.destination[1] == r.destination[1])).ToArray();
                 foreach (ConveyorModel collided in collisions)
                 {
                     moved.Remove(collided);
@@ -218,10 +218,10 @@ namespace RoboRuckus.RuckusCode.Movement
                     Robot.orientation desiredFacing = oldFacing;
 
                     // Check if a robot is being moved onto a space that contains a conveyor
-                    Conveyor entering = gameStatus.gameBoard.conveyors.FirstOrDefault(c => (c.location[0] == findMove.destination[0] && c.location[1] == findMove.destination[1]));
+                    Conveyor entering = gameStatus.gameBoard.conveyors.FirstOrDefault(c => c.location[0] == findMove.destination[0] && c.location[1] == findMove.destination[1]);
                     if (entering == null)
                     {
-                        entering = gameStatus.gameBoard.expressConveyors.FirstOrDefault(c => (c.location[0] == findMove.destination[0] && c.location[1] == findMove.destination[1]));
+                        entering = gameStatus.gameBoard.expressConveyors.FirstOrDefault(c => c.location[0] == findMove.destination[0] && c.location[1] == findMove.destination[1]);
                     }
                     if (entering != null)
                     {
@@ -298,33 +298,33 @@ namespace RoboRuckus.RuckusCode.Movement
             }
             int[] destination;
             // Get the conveyor space the robot is on
-            Conveyor space = gameStatus.gameBoard.conveyors.FirstOrDefault(c => (c.location[0] == moving.x_pos && c.location[1] == moving.y_pos));
+            Conveyor space = gameStatus.gameBoard.conveyors.FirstOrDefault(c => c.location[0] == moving.x_pos && c.location[1] == moving.y_pos);
             if (space == null)
             {
-                space = gameStatus.gameBoard.expressConveyors.First(c => (c.location[0] == moving.x_pos && c.location[1] == moving.y_pos));
+                space = gameStatus.gameBoard.expressConveyors.First(c => c.location[0] == moving.x_pos && c.location[1] == moving.y_pos);
             }
             // Find the robot's destination
             switch (space.exit)
             {
                 case Robot.orientation.X:
-                    destination = new int[] { moving.x_pos + 1, moving.y_pos };
+                    destination =  [moving.x_pos + 1, moving.y_pos ];
                     break;
                 case Robot.orientation.Y:
-                    destination = new int[] { moving.x_pos, moving.y_pos + 1 };
+                    destination = [ moving.x_pos, moving.y_pos + 1 ];
                     break;
                 case Robot.orientation.NEG_X:
-                    destination = new int[] { moving.x_pos - 1, moving.y_pos };
+                    destination = [ moving.x_pos - 1, moving.y_pos ];
                     break;
                 case Robot.orientation.NEG_Y:
-                    destination = new int[] { moving.x_pos, moving.y_pos - 1 };
+                    destination = [ moving.x_pos, moving.y_pos - 1 ];
                     break;
                 // This default should never execute
                 default:
-                    destination = new int[0];
+                    destination = [];
                     break;
             }
             // See if there's a robot on the space the bot is trying to move to
-            Robot inWay = gameStatus.robots.FirstOrDefault(r => (r.x_pos == destination[0] && r.y_pos == destination[1] && !gameStatus.players[r.controllingPlayer].dead));
+            Robot inWay = gameStatus.robots.FirstOrDefault(r => r.x_pos == destination[0] && r.y_pos == destination[1] && !gameStatus.players[r.controllingPlayer].dead);
             if (inWay != null)
             {
                 // Check if the robot in the way is also on a conveyor
@@ -374,7 +374,7 @@ namespace RoboRuckus.RuckusCode.Movement
                     if (!shooter.shutdown && !shooter.dead)
                     {
                         Robot bot = shooter.playerRobot;
-                        int shot = LoS(new int[] { bot.x_pos, bot.y_pos }, bot.currentDirection, botNumber: bot.robotNum);
+                        int shot = LoS([ bot.x_pos, bot.y_pos ], bot.currentDirection, botNumber: bot.robotNum);
                         if (shot != -1)
                         {
                             if (hit.ContainsKey(shot))
@@ -433,25 +433,25 @@ namespace RoboRuckus.RuckusCode.Movement
             switch (facing)
             {
                 case Robot.orientation.X:
-                    toCord = toCord == null ? new int[] { gameStatus.boardSizeX, fromCord[1] } : toCord;
-                    bot = gameStatus.robots.OrderBy(r => r.x_pos).FirstOrDefault(r => (!gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.x_pos >= fromCord[0] && r.x_pos <= toCord[0] && r.y_pos == fromCord[1]));
+                    toCord = toCord == null ? [ gameStatus.boardSizeX, fromCord[1] ] : toCord;
+                    bot = gameStatus.robots.OrderBy(r => r.x_pos).FirstOrDefault(r => !gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.x_pos >= fromCord[0] && r.x_pos <= toCord[0] && r.y_pos == fromCord[1]);
                     break;
                 case Robot.orientation.Y:
-                    toCord = toCord == null ? new int[] { fromCord[0], gameStatus.boardSizeY } : toCord;
-                    bot = gameStatus.robots.OrderBy(r => r.y_pos).FirstOrDefault(r => (!gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.y_pos >= fromCord[1] && r.y_pos <= toCord[1] && r.x_pos == fromCord[0]));
+                    toCord = toCord == null ? [ fromCord[0], gameStatus.boardSizeY ] : toCord;
+                    bot = gameStatus.robots.OrderBy(r => r.y_pos).FirstOrDefault(r => !gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.y_pos >= fromCord[1] && r.y_pos <= toCord[1] && r.x_pos == fromCord[0]);
                     break;
                 case Robot.orientation.NEG_X:
-                    toCord = toCord == null ? new int[] { 0, fromCord[1] } : toCord;
-                    bot = gameStatus.robots.OrderByDescending(r => r.x_pos).FirstOrDefault(r => (!gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.x_pos <= fromCord[0] && r.x_pos >= toCord[0] && r.y_pos == fromCord[1]));
+                    toCord = toCord == null ? [ 0, fromCord[1] ] : toCord;
+                    bot = gameStatus.robots.OrderByDescending(r => r.x_pos).FirstOrDefault(r => !gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.x_pos <= fromCord[0] && r.x_pos >= toCord[0] && r.y_pos == fromCord[1]);
                     break;
                 case Robot.orientation.NEG_Y:
-                    toCord = toCord == null ? new int[] { fromCord[0], 0 } : toCord;
-                    bot = gameStatus.robots.OrderByDescending(r => r.y_pos).FirstOrDefault(r => (!gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.y_pos <= fromCord[1] && r.y_pos >= toCord[1] && r.x_pos == fromCord[0]));
+                    toCord = toCord == null ? [ fromCord[0], 0 ] : toCord;
+                    bot = gameStatus.robots.OrderByDescending(r => r.y_pos).FirstOrDefault(r => !gameStatus.players[r.controllingPlayer].dead && r.robotNum != botNumber && r.y_pos <= fromCord[1] && r.y_pos >= toCord[1] && r.x_pos == fromCord[0]);
                     break;
             }
 
             // Check to see if a robot was found and, if so, if there's an obstacle blocking LoS.
-            if (bot == null || findWall(fromCord, new int[] { bot.x_pos, bot.y_pos }, facing) != null)
+            if (bot == null || findWall(fromCord, [ bot.x_pos, bot.y_pos ], facing) != null)
             {
                 // Obstacle is blocking, no bot in LoS
                 return -1;

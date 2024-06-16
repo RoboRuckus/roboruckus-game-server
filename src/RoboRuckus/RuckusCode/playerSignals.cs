@@ -374,8 +374,8 @@ namespace RoboRuckus.RuckusCode
                     }
                     while (randomNumber[0] >= numberOfCards);
                     drawn = randomNumber[0];
-                } while (gameStatus.deltCards.Contains(drawn) || gameStatus.lockedCards.Contains(drawn));
-                gameStatus.deltCards.Add(drawn);
+                } while (gameStatus.dealtCards.Contains(drawn) || gameStatus.lockedCards.Contains(drawn));
+                gameStatus.dealtCards.Add(drawn);
                 return drawn;
             }
         }
@@ -405,7 +405,7 @@ namespace RoboRuckus.RuckusCode
                 }
             }
             // Clear dealt cards
-            gameStatus.deltCards.Clear();
+            gameStatus.dealtCards.Clear();
 
             // Check for winner
             if (!gameStatus.winner)

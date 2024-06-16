@@ -10,7 +10,9 @@ namespace RoboRuckus.RuckusCode
 {
     public static class gameStatus
     {
-        // Use launch switch "botless" to play game without physical bots.
+        /// <summary>
+        /// Use launch switch "botless" to play game without physical bots.
+        /// </summary>
         public static bool botless
         {
             get { return _botless; }
@@ -28,13 +30,21 @@ namespace RoboRuckus.RuckusCode
                 }
             }
         }
+
+        /// <summary>
+        /// Used to indicate if the game is running in botless mode
+        /// </summary>
         private static bool _botless = false;
 
-        // Used to disable the option of letting robots drive over the edge of the board when required.
+        /// <summary>
+        /// Used to disable the option of letting robots drive over the edge of the board when required.
+        /// </summary>
         public static bool edgeControl = false;
 
 
-        // Used to disable the entire register during each round.
+        /// <summary>
+        /// Used to disable the entire register during each round.
+        /// </summary>
         public static bool showRegister = false;
 
         // Game state variables
@@ -44,10 +54,20 @@ namespace RoboRuckus.RuckusCode
         public static bool gameStarted = false;
         public static bool tuneRobots = false;
         public static bool roundRunning = false;
+
+        /// <summary>
+        /// Holds the robots that are available and not assigned to players in a game
+        /// </summary>
         public static List<Robot> robotPen = new List<Robot>();
+
+        /// <summary>
+        /// A list of robots currently assigned to players in a game
+        /// </summary>
+        /// 
         public static List<Robot> robots = new List<Robot>();
+
         public static List<Player> players = new List<Player>();
-        public static List<byte> deltCards = new List<byte>();
+        public static List<byte> dealtCards = new List<byte>();
         public static List<byte> lockedCards = new List<byte>();
         public static string[] movementCards;
         public static Board gameBoard;
@@ -188,7 +208,8 @@ namespace RoboRuckus.RuckusCode
         /// TBD
         /// Adds a robot to the list of available robots using Bluetooth interface
         /// </summary>
-        /// <param name="botIP">The IP address of the robot</param>
+        /// <param name="BTAddress">The Bluetooth address of the robot</param>
+        /// <param name="name">The name of the robot</param>
         /// <returns>The bot number</returns>
         public static int addBot(string BTAddress, string name)
         {
@@ -231,7 +252,7 @@ namespace RoboRuckus.RuckusCode
         /// <param name="showRegistersEnable">Show registers to players before execution</param>
         /// <param name="edgeControlEnable">Enable robot edge control</param>
         /// <param name="flags">The x,y coordinates of each flag in increasing numerical order</param>
-        public static void setupGame(Board board, int numberOfPlayers, bool showRegistersEnable, bool edgeControlEnable, int[][] flags)
+        public static void SetupGame(Board board, int numberOfPlayers, bool showRegistersEnable, bool edgeControlEnable, int[][] flags)
         {
             edgeControl = edgeControlEnable;
             showRegister = showRegistersEnable;
