@@ -63,7 +63,7 @@ namespace RoboRuckus.RuckusCode
                         return;
                     }
                     // Checks if all players have submitted their moves
-                    else if (gameStatus.players.Count(p => (p.move != null || p.dead || p.shutdown)) < gameStatus.numPlayersInGame)
+                    else if (gameStatus.players.Count(p => p.move != null || p.dead || p.shutdown) < gameStatus.numPlayersInGame)
                     {
                         return;
                     }
@@ -182,7 +182,7 @@ namespace RoboRuckus.RuckusCode
                         byte[] cards;
                         if (caller.shutdown)
                         {
-                            cards = new byte[0];
+                            cards = [];
                         }
                         else
                         {
@@ -204,7 +204,7 @@ namespace RoboRuckus.RuckusCode
                 }
                 else
                 {
-                    return new byte[0];
+                    return [];
                 }
             }
         }
@@ -411,7 +411,7 @@ namespace RoboRuckus.RuckusCode
             if (!gameStatus.winner)
             {
                 // Check if there are dead players with lives left who need to re-enter the game
-                if (gameStatus.players.Any(p => (p.dead && p.lives > 0)))
+                if (gameStatus.players.Any(p => p.dead && p.lives > 0))
                 {
                     gameStatus.playersNeedEntering = true;
                     showMessage("Dead robots re-entering floor, please be patient.", "entering");
@@ -423,7 +423,7 @@ namespace RoboRuckus.RuckusCode
                     if (!gameStatus.players.All(p => p.lives <= 0) && gameStatus.players.All(p => p.shutdown || p.lives <= 0))
                     {
                         // Clear dealt cards
-                        _playerHub.Clients.All.SendAsync("deal", new byte[0], new byte[0]);                        
+                        _playerHub.Clients.All.SendAsync("deal", Array.Empty<byte>(), Array.Empty<byte>());                        
 
                         // Alert players to what's happening
                         showMessage("All active players are shutdown, next round starting now.");
@@ -451,7 +451,7 @@ namespace RoboRuckus.RuckusCode
         private bool checkTimer()
         {
             // Makes sure there is more than one living player in the game, and checks if there is only one player who hasn't submitted their program.
-            if (gameStatus.playerTimer && gameStatus.players.Count(p => !p.dead) > 1 && gameStatus.players.Count(p => (p.move != null || p.dead || p.shutdown)) == (gameStatus.numPlayersInGame - 1))
+            if (gameStatus.playerTimer && gameStatus.players.Count(p => !p.dead) > 1 && gameStatus.players.Count(p => p.move != null || p.dead || p.shutdown) == (gameStatus.numPlayersInGame - 1))
             {
                 timerStarted = true;
                 _playerHub.Clients.All.SendAsync("startTimer");

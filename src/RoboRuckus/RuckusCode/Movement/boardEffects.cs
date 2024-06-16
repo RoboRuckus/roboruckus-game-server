@@ -123,7 +123,7 @@ namespace RoboRuckus.RuckusCode.Movement
         {
             lock (gameStatus.locker)
             {
-                return gameStatus.gameBoard.pits.Any(p => (p[0] == coordinate[0] && p[1] == coordinate[1]));
+                return gameStatus.gameBoard.pits.Any(p => p[0] == coordinate[0] && p[1] == coordinate[1]);
             }
         }
 
@@ -145,28 +145,28 @@ namespace RoboRuckus.RuckusCode.Movement
                         int[][] found = gameStatus.gameBoard.walls.OrderBy(w => w[0][0]).ThenBy(w => w[1][0]).FirstOrDefault(w => w[0][0] >= fromCord[0] && w[0][0] <= toCord[0] && w[1][0] >= fromCord[0] && w[1][0] <= toCord[0] && w[0][1] == fromCord[1] && w[1][1] == fromCord[1]);
                         if (found != null)
                         {
-                            wall = new int[] { found[0][0] < found[1][0] ? found[0][0] : found[1][0], found[0][1] };
+                            wall = [ found[0][0] < found[1][0] ? found[0][0] : found[1][0], found[0][1] ];
                         }
                         break;
                     case Robot.orientation.Y:
                         found = gameStatus.gameBoard.walls.OrderBy(w => w[0][1]).ThenBy(w => w[1][1]).FirstOrDefault(w => w[0][1] >= fromCord[1] && w[0][1] <= toCord[1] && w[1][1] >= fromCord[1] && w[1][1] <= toCord[1] && w[0][0] == fromCord[0] && w[1][0] == fromCord[0]);
                         if (found != null)
                         {
-                            wall = new int[] { found[0][1] < found[1][1] ? found[0][1] : found[1][1], found[0][0] };
+                            wall = [ found[0][1] < found[1][1] ? found[0][1] : found[1][1], found[0][0] ];
                         }
                         break;
                     case Robot.orientation.NEG_X:
                         found = gameStatus.gameBoard.walls.OrderByDescending(w => w[0][0]).ThenByDescending(w => w[1][0]).FirstOrDefault(w => w[0][0] <= fromCord[0] && w[0][0] >= toCord[0] && w[1][0] <= fromCord[0] && w[1][0] >= toCord[0] && w[0][1] == fromCord[1] && w[1][1] == fromCord[1]);
                         if (found != null)
                         {
-                            wall = new int[] { found[0][0] > found[1][0] ? found[0][0] : found[1][0], found[0][1] };
+                            wall = [ found[0][0] > found[1][0] ? found[0][0] : found[1][0], found[0][1] ];
                         }
                         break;
                     case Robot.orientation.NEG_Y:
                         found = gameStatus.gameBoard.walls.OrderByDescending(w => w[0][1]).ThenByDescending(w => w[1][1]).FirstOrDefault(w => w[0][1] <= fromCord[1] && w[0][1] >= toCord[1] && w[1][1] <= fromCord[1] && w[1][1] >= toCord[1] && w[0][0] == fromCord[0] && w[1][0] == fromCord[0]);
                         if (found != null)
                         {
-                            wall = new int[] { found[0][1] > found[1][1] ? found[0][1] : found[1][1], found[0][0] };
+                            wall = [ found[0][1] > found[1][1] ? found[0][1] : found[1][1], found[0][0] ];
                         }
                         break;
                 }
@@ -377,9 +377,9 @@ namespace RoboRuckus.RuckusCode.Movement
                         int shot = LoS([ bot.x_pos, bot.y_pos ], bot.currentDirection, botNumber: bot.robotNum);
                         if (shot != -1)
                         {
-                            if (hit.ContainsKey(shot))
+                            if (hit.TryGetValue(shot, out sbyte value))
                             {
-                                hit[shot]++;
+                                hit[shot] = value++;
                             }
                             else
                             {
@@ -405,7 +405,7 @@ namespace RoboRuckus.RuckusCode.Movement
                     int shot = LoS(shooter.start, shooter.facing, shooter.end);
                     if (shot != -1)
                     {
-                        if (hit.ContainsKey(shot))
+                        if (hit.TryGetValue(shot, out sbyte value))
                         {
                             hit[shot] += shooter.strength;
                         }

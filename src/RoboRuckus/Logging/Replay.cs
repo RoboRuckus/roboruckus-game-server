@@ -110,11 +110,12 @@ namespace RoboRuckus.Logging
         /// <summary>
         /// Start a round of play
         /// </summary>
-        /// <param name="players">The players' status at the start of the round</param>
+        /// <param name="players">The players' statuses at the start of the round</param>
         public static void StartRound(List<Player> players)
         {
             players.ForEach(player =>
             {
+                gameStatus.players[player.playerNumber].willShutdown = player.willShutdown;
                 serviceHelpers.signals.submitMove(gameStatus.players[player.playerNumber], player.move);
                 Thread.Sleep(250);
             });

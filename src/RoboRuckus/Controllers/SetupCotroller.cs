@@ -56,9 +56,12 @@ namespace RoboRuckus.Controllers
         /// <summary>
         /// Starts a replay game, for testing
         /// </summary>
-        /// <returns>Redirect to the monitor</returns>
+        /// <param name="gameID">The game ID to replay</param>
+        /// <param name="logger">The logger to use</param>
+        /// <param name="startRound">The round number to start on</param>
+        /// <returns>Redirects to the monitor</returns>    
         [HttpGet]
-        public IActionResult replay(int logger = 0, int gameID = 0)
+        public IActionResult replay(int gameID, int logger = 0, int startRound = 1)
         {
             if (gameID <= 0)
             {
@@ -69,6 +72,10 @@ namespace RoboRuckus.Controllers
             {
                 var gameSetup = Loggers.loggers[logger].GetGameSetup(gameID);
                 var gameEvents = Loggers.loggers[logger].getEvents(gameID);
+                if (startRound > 1) {
+                    gameEvents.RemoveRange(0, startRound - 1);
+                    gameSetup.players = gameEvents[0].Item2;
+                }
                 Replay.StartGame(gameSetup.boad, gameSetup.players);
                 Thread simulation = new(() => Replay.RunGame(gameEvents));
                 simulation.Start();
