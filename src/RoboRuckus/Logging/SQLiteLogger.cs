@@ -15,9 +15,11 @@ namespace RoboRuckus.Logging
         /// </summary>
         public SQLiteLogger()
         {
-            _connectionString = new();
-            _connectionString.DataSource = serviceHelpers.rootPath + Path.DirectorySeparatorChar + "GameConfig" + Path.DirectorySeparatorChar + "GameLog.db";
-            
+            _connectionString = new()
+            {
+                DataSource = serviceHelpers.rootPath + Path.DirectorySeparatorChar + "GameConfig" + Path.DirectorySeparatorChar + "GameLog.db"
+            };
+
             // Check if the database already exists
             if (File.Exists(_connectionString.DataSource))
             {
@@ -137,21 +139,21 @@ namespace RoboRuckus.Logging
         /// Retrieves a collection of the logged games by date
         /// </summary>
         /// <returns>The dictionary of dates of logged games linked to their rowid in the database</returns>
-        public Dictionary<DateTime,long> GetLoggedGames()
+        public Dictionary<long, DateTime> GetLoggedGames()
         {
-            Dictionary<DateTime,long> loggedGames = [];
+            Dictionary<long, DateTime> loggedGames = [];
             using SqliteConnection connection = new(_connectionString.ToString());            
             connection.Open();
             SqliteCommand command = connection.CreateCommand();
             command.CommandText =
                 @"
-                    SELECT timestamp, rowid
+                    SELECT rowid, timestamp
                     FROM LoggedGames
                 ";
             using SqliteDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                loggedGames.Add(DateTime.Parse(reader.GetString(0)), reader.GetInt64(1));
+                loggedGames.Add(reader.GetInt64(0), DateTime.Parse(reader.GetString(1)));
             }
             return loggedGames;
         }
@@ -161,7 +163,7 @@ namespace RoboRuckus.Logging
         /// </summary>
         /// <param name="gameId">The rowid of the logged game to get</param>
         /// <returns>The board used and a list of the initial player states</returns>
-        public (Board boad, List<Player> players) GetGameSetup(int gameId)
+        public (Board board, List<Player> players) GetGameSetup(int gameId)
         {
             List<Player> players = [];
             Board board = null;
@@ -189,15 +191,15 @@ namespace RoboRuckus.Logging
         /// </summary>
         /// <param name="gameID">The rowid of the logged game to get</param>
         /// <returns>A dictionary of paired event types, and a list of player snapshots for that event</returns>
-        public List<(ILogger.eventTypes,List<Player>)> getEvents(int gameID)
+        public List<(long, ILogger.eventTypes, List<Player>)> getEvents(int gameID)
         {
-            List<(ILogger.eventTypes,List<Player>)> events = [];
+            List<(long, ILogger.eventTypes, List<Player>)> events = [];
             using SqliteConnection connection = new(_connectionString.ToString());
             connection.Open();
             SqliteCommand command = connection.CreateCommand();
             command.CommandText =
                 @"
-                    SELECT *
+                    SELECT rowid, event, data
                     FROM Game_" + gameID.ToString() + @"
                 ";
             using SqliteDataReader reader = command.ExecuteReader();
@@ -205,7 +207,7 @@ namespace RoboRuckus.Logging
             settings.Converters.Add(new IPAddressConverter());
             while (reader.Read())
             {
-                events.Add(((ILogger.eventTypes)reader.GetInt32(0), JsonConvert.DeserializeObject<List<Player>>(reader.GetString(1),settings)));
+                events.Add((reader.GetInt64(0), (ILogger.eventTypes)reader.GetInt32(1), JsonConvert.DeserializeObject<List<Player>>(reader.GetString(2),settings)));
             }
             return events;
         }
@@ -284,7 +286,7 @@ namespace RoboRuckus.Logging
         {
             public override bool CanConvert(Type objectType)
             {
-                return (objectType == typeof(IPAddress));
+                return objectType == typeof(IPAddress);
             }
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

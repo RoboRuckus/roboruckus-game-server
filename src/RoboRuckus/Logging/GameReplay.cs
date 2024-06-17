@@ -11,7 +11,7 @@ namespace RoboRuckus.Logging
     /// <summary>
     /// Class to replay logged games
     /// </summary>
-    public static class Replay
+    public static class GameReplay
     {
         /// <summary>
         /// Set to true to abort any currently running replay simulation after the next event completes
@@ -72,7 +72,7 @@ namespace RoboRuckus.Logging
         /// Execution can be halted after the next event by setting the AbortReplay property in this class to true.
         /// </summary>
         /// <param name="events">The list of eventType and list of players pairs</param>
-        public static void RunGame(List<(ILogger.eventTypes, List<Player>)> events)
+        public static void RunGame(List<(long, ILogger.eventTypes, List<Player>)> events)
         {
             AbortReplay = false;
             Thread.Sleep(3000);
@@ -80,27 +80,27 @@ namespace RoboRuckus.Logging
             {
                 if (AbortReplay)
                     break;
-                switch(_event.Item1)
+                switch(_event.Item2)
                 {
                     case ILogger.eventTypes.roundStart:
-                        StartRound(_event.Item2);
+                        StartRound(_event.Item3);
                         Thread.Sleep(1000);
                         SpinWait.SpinUntil(() => !gameStatus.roundRunning);
                         break;
                     case ILogger.eventTypes.playerUpdate:
-                        UpdatePlayer(_event.Item2[0]);
+                        UpdatePlayer(_event.Item3[0]);
                         break;
                     case ILogger.eventTypes.playerAdded:
-                        AddPlayer(_event.Item2[0]);
+                        AddPlayer(_event.Item3[0]);
                         break;
                     case ILogger.eventTypes.playerEntering:
-                        EnterPlayer(_event.Item2[0]);
+                        EnterPlayer(_event.Item3[0]);
                         break;
                     case ILogger.eventTypes.botDeath:
-                        RobotDied(_event.Item2[0]);
+                        RobotDied(_event.Item3[0]);
                         break;
                     case ILogger.eventTypes.gameEnd:
-                        GameEnded(_event.Item2);
+                        GameEnded(_event.Item3);
                         break;                        
                 }
                 Thread.Sleep(250);

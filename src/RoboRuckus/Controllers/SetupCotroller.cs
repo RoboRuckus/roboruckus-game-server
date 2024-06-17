@@ -54,6 +54,16 @@ namespace RoboRuckus.Controllers
         }
 
         /// <summary>
+        /// Loads the game replay interface
+        /// </summary>
+        /// <returns>The view</returns>
+        [HttpGet]
+        public IActionResult Replay()
+        {
+            return View();
+        }
+
+        /// <summary>
         /// Starts a replay game, for testing
         /// </summary>
         /// <param name="gameID">The game ID to replay</param>
@@ -61,12 +71,26 @@ namespace RoboRuckus.Controllers
         /// <param name="startRound">The round number to start on</param>
         /// <returns>Redirects to the monitor</returns>    
         [HttpGet]
-        public IActionResult replay(int gameID, int logger = 0, int startRound = 1)
+        public IActionResult startReplay(int gameID, int logger, int startRound = 1)
         {
             if (gameID <= 0)
             {
                 var loggedGames = Loggers.loggers[logger].GetLoggedGames();
+                return Content(JsonConvert.SerializeObject(loggedGames), "text/json");
                 // Add interface for selecting game to replay
+            }
+            else if (startRound <= 0) 
+            {
+                List<long> rounds = [];
+                var gameEvents = Loggers.loggers[logger].getEvents(gameID);
+                gameEvents.ForEach(gameEvent => 
+                {
+                    if (gameEvent.Item2 == ILogger.eventTypes.roundStart) 
+                    {
+                        rounds.Add(gameEvent.Item1);
+                    }
+                });          
+                return Content(JsonConvert.SerializeObject(rounds), "text/json");
             }
             else
             {
@@ -74,15 +98,14 @@ namespace RoboRuckus.Controllers
                 var gameEvents = Loggers.loggers[logger].getEvents(gameID);
                 if (startRound > 1) {
                     gameEvents.RemoveRange(0, startRound - 1);
-                    gameSetup.players = gameEvents[0].Item2;
+                    gameSetup.players = gameEvents[0].Item3;
                 }
-                Replay.StartGame(gameSetup.boad, gameSetup.players);
-                Thread simulation = new(() => Replay.RunGame(gameEvents));
+                GameReplay.StartGame(gameSetup.board, gameSetup.players);
+                Thread simulation = new(() => GameReplay.RunGame(gameEvents));
                 simulation.Start();
 
                 return RedirectToAction("Monitor");
             }
-            return View();
         }
 
         /// <summary>

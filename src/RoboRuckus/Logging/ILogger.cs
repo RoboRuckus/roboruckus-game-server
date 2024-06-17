@@ -70,21 +70,21 @@ namespace RoboRuckus.Logging
         /// Retrieves a collection of the logged games by date
         /// </summary>
         /// <returns>The dictionary of dates of logged games linked to their game ID value in the log</returns>
-        public Dictionary<DateTime,long> GetLoggedGames();
+        public Dictionary<long, DateTime> GetLoggedGames();
 
         /// <summary>
         /// Gets the info to setup a game for replay
         /// </summary>
         /// <param name="gameId">The game ID of the logged game to get</param>
         /// <returns>The board used and a list of the initial player states</returns>
-        public (Board boad, List<Player> players) GetGameSetup(int gameId);
+        public (Board board, List<Player> players) GetGameSetup(int gameId);
 
         /// <summary>
         /// Retrieves all the logged events for a game
         /// </summary>
         /// <param name="gameID">The game ID of the logged game to get</param>
-        /// <returns>A dictionary of paired event types, and a list of player snapshots for that event</returns>
-        public List<(eventTypes, List<Player>)> getEvents(int gameID);
+        /// <returns>A list of tuples grouping event ID number, event types, and a list of player snapshots for that event</returns>
+        public List<(long, eventTypes, List<Player>)> getEvents(int gameID);
 
     }
 }
