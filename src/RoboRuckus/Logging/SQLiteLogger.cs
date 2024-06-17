@@ -191,7 +191,7 @@ namespace RoboRuckus.Logging
         /// </summary>
         /// <param name="gameID">The rowid of the logged game to get</param>
         /// <returns>A dictionary of paired event types, and a list of player snapshots for that event</returns>
-        public List<(long, ILogger.eventTypes, List<Player>)> getEvents(int gameID)
+        public List<(long, ILogger.eventTypes, List<Player>)> GetEvents(int gameID)
         {
             List<(long, ILogger.eventTypes, List<Player>)> events = [];
             using SqliteConnection connection = new(_connectionString.ToString());

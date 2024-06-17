@@ -84,7 +84,7 @@ namespace RoboRuckus.Logging
         /// </summary>
         /// <param name="gameID">The game ID of the logged game to get</param>
         /// <returns>A list of tuples grouping event ID number, event types, and a list of player snapshots for that event</returns>
-        public List<(long, eventTypes, List<Player>)> getEvents(int gameID);
+        public List<(long, eventTypes, List<Player>)> GetEvents(int gameID);
 
     }
 }

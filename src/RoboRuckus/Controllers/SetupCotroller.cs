@@ -82,7 +82,7 @@ namespace RoboRuckus.Controllers
             else if (startRound <= 0) 
             {
                 List<long> rounds = [];
-                var gameEvents = Loggers.loggers[logger].getEvents(gameID);
+                var gameEvents = Loggers.loggers[logger].GetEvents(gameID);
                 gameEvents.ForEach(gameEvent => 
                 {
                     if (gameEvent.Item2 == ILogger.eventTypes.roundStart) 
@@ -95,7 +95,7 @@ namespace RoboRuckus.Controllers
             else
             {
                 var gameSetup = Loggers.loggers[logger].GetGameSetup(gameID);
-                var gameEvents = Loggers.loggers[logger].getEvents(gameID);
+                var gameEvents = Loggers.loggers[logger].GetEvents(gameID);
                 if (startRound > 1) {
                     gameEvents.RemoveRange(0, startRound - 1);
                     gameSetup.players = gameEvents[0].Item3;
