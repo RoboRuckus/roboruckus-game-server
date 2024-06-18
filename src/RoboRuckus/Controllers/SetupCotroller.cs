@@ -69,7 +69,7 @@ namespace RoboRuckus.Controllers
         /// <param name="gameID">The game ID to replay</param>
         /// <param name="logger">The logger to use</param>
         /// <param name="startRound">The round number to start on</param>
-        /// <returns>Redirects to the monitor</returns>    
+        /// <returns>Redirects to the monitor, or returns the requested list of games/events</returns>    
         [HttpGet]
         public IActionResult startReplay(int gameID, int logger, int startRound = 1)
         {
@@ -77,7 +77,6 @@ namespace RoboRuckus.Controllers
             {
                 var loggedGames = Loggers.loggers[logger].GetLoggedGames();
                 return Content(JsonConvert.SerializeObject(loggedGames), "text/json");
-                // Add interface for selecting game to replay
             }
             else if (startRound <= 0) 
             {

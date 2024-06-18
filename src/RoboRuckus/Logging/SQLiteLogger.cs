@@ -89,8 +89,6 @@ namespace RoboRuckus.Logging
             ";
             addTable.ExecuteNonQuery();
             transaction.Commit();
-            
-            
         }
 
         public void LogRoundStart(List<Player> players)
@@ -118,7 +116,7 @@ namespace RoboRuckus.Logging
         {
             JsonSerializerSettings settings = new();
             settings.Converters.Add(new IPAddressConverter());
-            addEvent(ILogger.eventTypes.playerEntering, JsonConvert.SerializeObject(new List<Player> { player }, settings));
+            addEvent(ILogger.eventTypes.playerEntered, JsonConvert.SerializeObject(new List<Player> { player }, settings));
         }
 
         public void LogGameEnd(List<Player> players)
@@ -190,7 +188,7 @@ namespace RoboRuckus.Logging
         /// Retrieves all the logged events for a game
         /// </summary>
         /// <param name="gameID">The rowid of the logged game to get</param>
-        /// <returns>A dictionary of paired event types, and a list of player snapshots for that event</returns>
+        /// <returns>A list of tuples grouping rowid, event types, and a list of player snapshots for that event</returns>
         public List<(long, ILogger.eventTypes, List<Player>)> GetEvents(int gameID)
         {
             List<(long, ILogger.eventTypes, List<Player>)> events = [];

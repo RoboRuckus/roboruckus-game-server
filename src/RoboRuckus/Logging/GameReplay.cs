@@ -98,7 +98,7 @@ namespace RoboRuckus.Logging
                     case ILogger.eventTypes.playerAdded:
                         AddPlayer(_event.Item3[0]);
                         break;
-                    case ILogger.eventTypes.playerEntering:
+                    case ILogger.eventTypes.playerEntered:
                         EnterPlayer(_event.Item3[0]);
                         break;
                     case ILogger.eventTypes.botDeath:

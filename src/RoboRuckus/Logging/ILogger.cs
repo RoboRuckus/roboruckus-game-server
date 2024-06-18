@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using RoboRuckus.RuckusCode;
-using static RoboRuckus.Logging.SQLiteLogger;
 
 namespace RoboRuckus.Logging
 {
@@ -19,7 +18,7 @@ namespace RoboRuckus.Logging
             roundStart,
             botDeath,
             playerAdded,
-            playerEntering,
+            playerEntered,
             playerUpdate
         }
 
