@@ -35,15 +35,14 @@ namespace RoboRuckus.Logging
             // Check if game board already exists
             if (gameStatus.boards.FirstOrDefault(b => b.name == board.name) is null)
             {
+                // Temporarily remove flags to make board
+                int[][] flagBuffer = board.flags;
+                board.flags = [];
+
                 // Create new game board, note it will not make pretty corner walls.
                 // Board can be edited after creation to add corner walls.
                 boardImageMaker newBoardMaker = new(board, [], false);
                 newBoardMaker.createImage();
-                newBoardMaker.Dispose();
-                
-                // Temporarily remove flags to make board JSON
-                int[][] flagBuffer = board.flags;
-                board.flags = [];
 
                 // Convert to JSON
                 string newBoard = JsonConvert.SerializeObject(board);
@@ -53,6 +52,7 @@ namespace RoboRuckus.Logging
                 using StreamWriter sw = new(serviceHelpers.rootPath + _separator + "GameConfig" + _separator + "Boards" + _separator + board.name.Replace(" ", "") + ".json", false);               
                 sw.Write(newBoard);
                 sw.Close();
+                board.flags = flagBuffer;
             }
 
             // Setup the game
@@ -62,7 +62,12 @@ namespace RoboRuckus.Logging
             players.ForEach(player =>
             {
                 AddPlayer(player);
-                Thread.Sleep(250);
+                // Set the initial player state
+                gameStatus.players[player.playerNumber].playerRobot.flags = player.playerRobot.flags;
+                gameStatus.players[player.playerNumber].playerRobot.damage = player.playerRobot.damage;
+                gameStatus.players[player.playerNumber].dead = player.dead;
+                gameStatus.players[player.playerNumber].shutdown = player.shutdown;
+                gameStatus.players[player.playerNumber].lives = player.lives;
             });
             gameStatus.gameStarted = true;
         }
@@ -122,7 +127,7 @@ namespace RoboRuckus.Logging
         }
 
         /// <summary>
-        /// Handles a dead robot. Nothing to do here yet
+        /// Handles a robot dying. Nothing to do here yet
         /// </summary>
         /// <param name="player"></param>
         public static void RobotDied(Player player)
@@ -183,6 +188,7 @@ namespace RoboRuckus.Logging
         {
             serviceHelpers.signals.enterPlayer(gameStatus.players[player.playerNumber], [ player.playerRobot.x_pos, player.playerRobot.y_pos ], player.playerRobot.currentDirection);
             gameStatus.playersNeedEntering = false;
+            serviceHelpers.signals.dealPlayers();
         }
 
         /// <summary>
