@@ -10,7 +10,7 @@ RUN dotnet build "RoboRuckus.csproj" -v m -c Release -o $BUILD_DIR
 FROM mcr.microsoft.com/dotnet/sdk:8.0
 ARG BUILD_DIR
 WORKDIR /app
-COPY --from=build $BUILD_DIR/GameConfig/Boards /default/boards
+COPY --from=build $BUILD_DIR/GameConfig/ /default/GameConfig
 COPY --from=build $BUILD_DIR/wwwroot/images/boards /default/images
 COPY --from=build $BUILD_DIR ./
 COPY --chmod=+x startup.sh ./

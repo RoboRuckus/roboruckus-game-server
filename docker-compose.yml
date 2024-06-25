@@ -8,7 +8,7 @@ services:
     environment:
       - ARGS= # Set launch arguments here, e.g. --options=botless
     volumes:
-      - ./Ruckus/Boards:/app/GameConfig/Boards
+      - ./Ruckus/GameConfig:/app/GameConfig/
       - ./Ruckus/Images:/app/wwwroot/images/boards
     ports:
       - 8082:8082
