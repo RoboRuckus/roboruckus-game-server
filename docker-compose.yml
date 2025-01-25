@@ -1,4 +1,5 @@
 services:
+
   gameserver:
     image: ghcr.io/roboruckus/roboruckus-game-server:main
     container_name: roboruckus
@@ -6,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - ARGS= # Set launch arguments here, e.g. --options=botless
+      - ARGS= --options=botless # Set launch arguments here, e.g. --options=botless
     volumes:
       - ./Ruckus/GameConfig:/app/GameConfig/
       - ./Ruckus/Images:/app/wwwroot/images/boards

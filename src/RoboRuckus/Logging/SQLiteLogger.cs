@@ -297,6 +297,5 @@ namespace RoboRuckus.Logging
                 return IPAddress.Parse((string)reader.Value);
             }
         }
-
     }
 }
