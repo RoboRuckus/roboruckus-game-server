@@ -32,7 +32,7 @@ namespace RoboRuckus.RuckusCode
         public orientation currentDirection = orientation.Y;
         public IPAddress robotAddress;
         public string robotName;
-        public Player controllingPlayer = null;
+        public int controllingPlayer = -1;
         public EventWaitHandle moving = new ManualResetEvent(false);
 
         /// <summary>
@@ -66,77 +66,81 @@ namespace RoboRuckus.RuckusCode
             }
             set
             {
-                // Only one thread should be issuing orders and/or modifying damage at a time
-                lock (gameStatus.locker)
+                // Only attempt to alter players if the controlling player exists
+                if (gameStatus.gameStarted && gameStatus.players.Count > controllingPlayer)
                 {
-                    if (value < 0)
+                    // Only one thread should be issuing orders and/or modifying damage at a time
+                    lock (gameStatus.locker)
                     {
-                        _damage = 0;
-                    }
-                    else if (value > 10)
-                    {
-                        _damage = 10;
-                    }
-                    else
-                    {
-                        _damage = value;
-                    }
-                    // Check for a need to modify locked cards
-                    if (_damage > 4)
-                    {
-                        // Bot is dead!
-                        if (_damage >= 10)
+                        if (value < 0)
                         {
-                            controllingPlayer.dead = true;
+                            _damage = 0;
+                        }
+                        else if (value > 10)
+                        {
+                            _damage = 10;
                         }
                         else
                         {
-                            if (controllingPlayer.lockedCards.Count > _damage - 4)
+                            _damage = value;
+                        }
+                        // Check for a need to modify locked cards
+                        if (_damage > 4)
+                        {
+                            // Bot is dead!
+                            if (_damage >= 10)
                             {
-                                // Unlock cards if necessary
-                                while (controllingPlayer.lockedCards.Count > _damage - 4)
-                                {
-                                    // Unlock the most recently locked card
-                                    gameStatus.lockedCards.Remove(controllingPlayer.lockedCards[controllingPlayer.lockedCards.Count - 1]);
-                                    controllingPlayer.lockedCards.Remove(controllingPlayer.lockedCards[controllingPlayer.lockedCards.Count - 1]);
-                                }
+                                gameStatus.players[controllingPlayer].dead = true;
                             }
                             else
                             {
-                                // Lock cards if necessary
-                                for (int i = controllingPlayer.lockedCards.Count; i < _damage - 4; i++)
+                                if (gameStatus.players[controllingPlayer].lockedCards.Count > _damage - 4)
                                 {
-                                    byte card;
-                                    // Is the player shutdown and taking damage? (Ouch!)
-                                    if (controllingPlayer.shutdown)
+                                    // Unlock cards if necessary
+                                    while (gameStatus.players[controllingPlayer].lockedCards.Count > _damage - 4)
                                     {
-                                        card = serviceHelpers.signals.drawCard();
+                                        // Unlock the most recently locked card
+                                        gameStatus.lockedCards.Remove(gameStatus.players[controllingPlayer].lockedCards[^2]);
+                                        gameStatus.players[controllingPlayer].lockedCards.Remove(gameStatus.players[controllingPlayer].lockedCards[^2]);
                                     }
-                                    else
+                                }
+                                else
+                                {
+                                    // Lock cards if necessary
+                                    for (int i = gameStatus.players[controllingPlayer].lockedCards.Count; i < _damage - 4; i++)
                                     {
-                                        card = controllingPlayer.move[4 - i].cardNumber;
-                                    }
+                                        byte card;
+                                        // Is the player shutdown and taking damage? (Ouch!)
+                                        if (gameStatus.players[controllingPlayer].shutdown)
+                                        {
+                                            card = serviceHelpers.signals.drawCard();
+                                        }
+                                        else
+                                        {
+                                            card = gameStatus.players[controllingPlayer].move[4 - i].cardNumber;
+                                        }
 
-                                    // Check if the card is already locked, to be safe
-                                    if (!gameStatus.lockedCards.Contains(card))
-                                    {
-                                        gameStatus.lockedCards.Add(card);
-                                        controllingPlayer.lockedCards.Add(card);
+                                        // Check if the card is already locked, to be safe
+                                        if (!gameStatus.lockedCards.Contains(card))
+                                        {
+                                            gameStatus.lockedCards.Add(card);
+                                            gameStatus.players[controllingPlayer].lockedCards.Add(card);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    else
-                    {
-                        // Remove locked cards, just in case
-                        if (controllingPlayer.lockedCards.Count != 0)
+                        else
                         {
-                            foreach (byte card in controllingPlayer.lockedCards)
+                            // Remove locked cards, just in case
+                            if (gameStatus.players[controllingPlayer].lockedCards.Count != 0)
                             {
-                                gameStatus.lockedCards.Remove(card);
+                                foreach (byte card in gameStatus.players[controllingPlayer].lockedCards)
+                                {
+                                    gameStatus.lockedCards.Remove(card);
+                                }
+                                gameStatus.players[controllingPlayer].lockedCards.Clear();
                             }
-                            controllingPlayer.lockedCards.Clear();
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cp -r /default/boards/* /app/GameConfig/Boards/
+cp -r /default/GameConfig/* /app/GameConfig/
 cp -r /default/images/* /app/wwwroot/images/boards/
 
 # Run the service

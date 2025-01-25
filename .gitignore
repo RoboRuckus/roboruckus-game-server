@@ -3,8 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# Debug log file
+# Log files, add others as needed
 src/RoboRuckus/gamelog.txt
+*GameLog.db*
 
 # Docker mounts
 Ruckus

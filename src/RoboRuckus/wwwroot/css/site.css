@@ -21,9 +21,6 @@
     background: rgba(255, 234, 0, 0.61) !important;
 }
 
-.ui-selectmenu-button.ui-button {
-}
-
 /* Player page stuff */
 .topRow {
     display: inline-block;
@@ -408,4 +405,12 @@ select {
 
 .beam {
     z-index: 7 !important;
+}
+
+/* Replay page stuff */
+
+.loggedGame {
+    text-decoration: underline;
+    cursor: pointer;
+    color: blue;
 }

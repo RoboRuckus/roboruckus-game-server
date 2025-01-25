@@ -23,7 +23,7 @@ namespace RoboRuckus.Controllers
         /// <summary>
         /// A bot calls this action to be added to the game as an available robot
         /// </summary>
-        /// <param name="botDescriptionModel">Description of bot info</param>
+        /// <param name="botInfo">Description of bot info</param>
         /// <returns>202 Accepted</returns>
         [HttpPut]
         public IActionResult Index(botDescriptionModel botInfo)
@@ -37,7 +37,7 @@ namespace RoboRuckus.Controllers
         /// <summary>
         /// A bot calls this action when it's completed a move
         /// </summary>
-        /// <param name="bot">The bot number</param>
+        /// <param name="botModel">The bot number</param>
         /// <returns>202 Accepted</returns>
         [HttpPost("Done/")]
         public IActionResult Done(botNumberModel botModel)

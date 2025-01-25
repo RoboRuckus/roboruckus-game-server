@@ -1,0 +1,15 @@
+﻿@* @model RoboRuckus.Models.setupViewModel *@
+@{
+    ViewData["Title"] = "Replay";
+}
+
+<div class="row">
+    <div id="loggedGames"></div>
+    <div id="gameEvents"></div>
+</div>
+
+@section Scripts {
+    <script src="@Url.Content("~/lib/jquery-validation/jquery.validate.js")"></script>
+    <script src="@Url.Content("~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js")"></script>
+    <script type="text/javascript" src=@Url.Content("~/Scripts/replay.js")></script>
+}

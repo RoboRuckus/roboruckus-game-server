@@ -36,7 +36,7 @@ namespace RoboRuckus.RuckusCode.Movement
                 // Loop through each register
                 for (int i = 0; i < 5; i++)
                 {
-                    if (gameStatus.robots.Any(r => !r.controllingPlayer.dead))
+                    if (gameStatus.robots.Any(r => !gameStatus.players[r.controllingPlayer].dead))
                     {
                         // Move robots
                         executePlayerMoves(i);
@@ -77,10 +77,9 @@ namespace RoboRuckus.RuckusCode.Movement
                             {
                                 bot.damage--;
                                 // Update "archive marker" (a.k.a. new respawn location)
-                                if (!bot.controllingPlayer.shutdown)
+                                if (!gameStatus.players[bot.controllingPlayer].shutdown)
                                 {
-                                    bot.lastLocation[0] = bot.x_pos;
-                                    bot.lastLocation[1] = bot.y_pos;
+                                    bot.lastLocation = [ bot.x_pos, bot.y_pos ];
                                 }
                             }
                             serviceHelpers.signals.updateHealth();
@@ -127,7 +126,7 @@ namespace RoboRuckus.RuckusCode.Movement
                         // Check for winner                       
                         if (winner != null)
                         {
-                            serviceHelpers.signals.showMessage((winner.robotName).ToString() + " has won!", "winner");
+                            serviceHelpers.signals.showMessage(winner.robotName.ToString() + " has won!", "winner");
                             gameStatus.winner = true;
                             Thread.Sleep(250);
                             // Do a victory dance
@@ -336,9 +335,9 @@ namespace RoboRuckus.RuckusCode.Movement
                             newCordY--;
                             break;
                     }
-                    destination = new int[] { newCordX, newCordY };
+                    destination = [ newCordX, newCordY ];
                     // Check for walls and other obstacles
-                    if (isObstacle(new int[] { bot.x_pos, bot.y_pos }, destination, direction))
+                    if (isObstacle([ bot.x_pos, bot.y_pos ], destination, direction))
                     {
                         magnitude = i - 1;
                         break;
@@ -381,20 +380,20 @@ namespace RoboRuckus.RuckusCode.Movement
                             switch (direction)
                             {
                                 case Robot.orientation.X:
-                                    destination = new int[] { bot.x_pos + i, bot.y_pos };
+                                    destination = [bot.x_pos + i, bot.y_pos] ;
                                     break;
                                 case Robot.orientation.Y:
-                                    destination = new int[] { bot.x_pos, newCordY = bot.y_pos + i };
+                                    destination = [ bot.x_pos, newCordY = bot.y_pos + i ];
                                     break;
                                 case Robot.orientation.NEG_X:
-                                    destination = new int[] { newCordX = bot.x_pos - i, bot.y_pos };
+                                    destination = [ newCordX = bot.x_pos - i, bot.y_pos] ;
                                     break;
                                 case Robot.orientation.NEG_Y:
-                                    destination = new int[] { bot.x_pos, newCordY = bot.y_pos - i };
+                                    destination = [ bot.x_pos, newCordY = bot.y_pos - i ];
                                     break;
                             }
                             // Check for any other bots on that space
-                            botFound = gameStatus.robots.FirstOrDefault(r => (r.robotNum != bot.robotNum && r.x_pos == destination[0] && r.y_pos == destination[1]));
+                            botFound = gameStatus.robots.FirstOrDefault(r => r.robotNum != bot.robotNum && r.x_pos == destination[0] && r.y_pos == destination[1]);
                             
                             if (botFound != null)
                             {
@@ -501,7 +500,7 @@ namespace RoboRuckus.RuckusCode.Movement
         {
             List<orderModel> orders = new List<orderModel>();
             // Set the size of the register list to all the currently active players
-            moveModel[] register = new moveModel[gameStatus.players.Count(p => (!p.dead && !p.shutdown))];
+            moveModel[] register = new moveModel[gameStatus.players.Count(p => !p.dead && !p.shutdown)];
             // Add the cards to the register
             int reg = 0;
             for (int j = 0; j < gameStatus.players.Count; j++)
@@ -527,7 +526,7 @@ namespace RoboRuckus.RuckusCode.Movement
             foreach (moveModel move in register)
             {
                 // Check if robot has died during the register
-                if (!move.bot.controllingPlayer.dead)
+                if (!gameStatus.players[move.bot.controllingPlayer].dead)
                 {
                     serviceHelpers.signals.displayMove(move, regsiter);
                     orders = calculateMove(move);
@@ -549,6 +548,7 @@ namespace RoboRuckus.RuckusCode.Movement
         /// </summary>
         /// <param name="fromCord">[x,y] The coordinate the bot will be moving from</param>
         /// <param name="toCord">[x,y] The coordinate the bot will be moving to</param>
+        /// <param name="direction">The direction to search</param>
         /// <returns>True if there's a non-bot obstacle between those two spaces</returns>
         private static bool isObstacle(int[] fromCord, int[] toCord, Robot.orientation direction)
         {

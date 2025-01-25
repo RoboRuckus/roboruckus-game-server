@@ -10,7 +10,9 @@ namespace RoboRuckus.RuckusCode
 {
     public static class gameStatus
     {
-        // Use launch switch "botless" to play game without physical bots.
+        /// <summary>
+        /// Use launch switch "botless" to play game without physical bots.
+        /// </summary>
         public static bool botless
         {
             get { return _botless; }
@@ -28,13 +30,21 @@ namespace RoboRuckus.RuckusCode
                 }
             }
         }
+
+        /// <summary>
+        /// Used to indicate if the game is running in botless mode
+        /// </summary>
         private static bool _botless = false;
 
-        // Used to disable the option of letting robots drive over the edge of the board when required.
+        /// <summary>
+        /// Used to disable the option of letting robots drive over the edge of the board when required.
+        /// </summary>
         public static bool edgeControl = false;
 
 
-        // Used to disable the entire register during each round.
+        /// <summary>
+        /// Used to disable the entire register during each round.
+        /// </summary>
         public static bool showRegister = false;
 
         // Game state variables
@@ -43,10 +53,21 @@ namespace RoboRuckus.RuckusCode
         public static bool gameReady = false;
         public static bool gameStarted = false;
         public static bool tuneRobots = false;
+        public static bool roundRunning = false;
+
+        /// <summary>
+        /// Holds the robots that are available and not assigned to players in a game
+        /// </summary>
         public static List<Robot> robotPen = new List<Robot>();
+
+        /// <summary>
+        /// A list of robots currently assigned to players in a game
+        /// </summary>
+        /// 
         public static List<Robot> robots = new List<Robot>();
+
         public static List<Player> players = new List<Player>();
-        public static List<byte> deltCards = new List<byte>();
+        public static List<byte> dealtCards = new List<byte>();
         public static List<byte> lockedCards = new List<byte>();
         public static string[] movementCards;
         public static Board gameBoard;
@@ -101,7 +122,7 @@ namespace RoboRuckus.RuckusCode
         /// <returns>True on success</returns>
         public static bool assignBot(int player, string robotName)
         {
-            Player sender = players[player - 1];
+            Player sender = players[player];
             if (sender.playerRobot != null)
             {
                 return true;
@@ -114,7 +135,7 @@ namespace RoboRuckus.RuckusCode
                 robotPen.Remove(bot);
                 bot.robotNum = (byte)(robots.Count - 1);
                 // Assign player to bot
-                bot.controllingPlayer = sender;
+                bot.controllingPlayer = sender.playerNumber;
                 sender.playerRobot = bot;
                 if (!_botless)
                 {
@@ -137,10 +158,9 @@ namespace RoboRuckus.RuckusCode
                 // Makes sure there are enough player slots and robots for another player to be added
                 if (numPlayersInGame < numPlayers && robotPen.Count > 0)
                 {
-                    // Create new player with their chosen bot                    
+                    // Create new player                
                     Player newPlayer = new Player((byte)numPlayersInGame);
                     players.Add(newPlayer);
-
                     numPlayersInGame++;
                     return numPlayersInGame;
                 }
@@ -164,7 +184,7 @@ namespace RoboRuckus.RuckusCode
                 if (bot != null)
                 {
                    bot.robotAddress = botIP;
-                   return bot.robotNum | 0x10000 | (bot.controllingPlayer.playerNumber << 8);
+                   return bot.robotNum | 0x10000 | (players[bot.controllingPlayer].playerNumber << 8);
                 }
                  // Check if bot exists but is unassigned
                 bot = robotPen.FirstOrDefault(r => r.robotName == name);
@@ -188,7 +208,8 @@ namespace RoboRuckus.RuckusCode
         /// TBD
         /// Adds a robot to the list of available robots using Bluetooth interface
         /// </summary>
-        /// <param name="botIP">The IP address of the robot</param>
+        /// <param name="BTAddress">The Bluetooth address of the robot</param>
+        /// <param name="name">The name of the robot</param>
         /// <returns>The bot number</returns>
         public static int addBot(string BTAddress, string name)
         {
@@ -201,7 +222,7 @@ namespace RoboRuckus.RuckusCode
                 {
                     // *** Change below to assign bot BT Address
                     //bot.robotAddress = botIP;
-                    return bot.robotNum | 0x10000 | (bot.controllingPlayer.playerNumber << 8);
+                    return bot.robotNum | 0x10000 | (players[bot.controllingPlayer].playerNumber << 8);
                 }
                 // Check if bot exists but is unassigned
                 bot = robotPen.FirstOrDefault(r => r.robotName == name);
@@ -220,6 +241,36 @@ namespace RoboRuckus.RuckusCode
                     //bot.robotAddress = botIP;
                     return bot.robotNum;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Starts a game
+        /// </summary>
+        /// <param name="board">The board to play with</param>
+        /// <param name="numberOfPlayers">The maximum number of players in the game</param>
+        /// <param name="showRegistersEnable">Show registers to players before execution</param>
+        /// <param name="edgeControlEnable">Enable robot edge control</param>
+        /// <param name="flags">The x,y coordinates of each flag in increasing numerical order</param>
+        public static void SetupGame(Board board, int numberOfPlayers, bool showRegistersEnable, bool edgeControlEnable, int[][] flags)
+        {
+            edgeControl = edgeControlEnable;
+            showRegister = showRegistersEnable;
+            numPlayers = numberOfPlayers;
+            if (board != null)
+            {
+                gameBoard = board;
+                if (flags.Length > 0)
+                {
+                    gameBoard.flags = flags;
+                }
+                else
+                {
+                    gameBoard.flags = [];
+                }
+                boardSizeX = gameBoard.size[0];
+                boardSizeY = gameBoard.size[1];
+                gameReady = true;
             }
         }
     }

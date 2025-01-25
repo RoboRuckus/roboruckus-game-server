@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using System.Security.Cryptography;
 using RoboRuckus.RuckusCode.Movement;
 using RoboRuckus.Hubs;
-using System.IO;
-using System.Collections.Generic;
+using RoboRuckus.Logging;
 
 namespace RoboRuckus.RuckusCode
 {
@@ -64,83 +63,35 @@ namespace RoboRuckus.RuckusCode
                         return;
                     }
                     // Checks if all players have submitted their moves
-                    else if (gameStatus.players.Count(p => (p.move != null || p.dead || p.shutdown)) < gameStatus.numPlayersInGame)
+                    else if (gameStatus.players.Count(p => p.move != null || p.dead || p.shutdown) < gameStatus.numPlayersInGame)
                     {
                         return;
                     }
                     timerStarted = false;
 
-                    // List for logging, if enabled
-                    List<string> Lines = new List<string>();
-                    if (serviceHelpers.logging)
-                    {
-                        // Log board state and submitted moves to log file
-                        Lines.Add("---- Start Round ----");
-                        foreach (Player player in gameStatus.players)
-                        {
-                            Lines.Add("Player: " + (player.playerNumber + 1).ToString());
-                            if (player.shutdown == false)
-                            {
-                                Lines.Add("X: " + player.playerRobot.x_pos.ToString());
-                                Lines.Add("Y: " + player.playerRobot.y_pos.ToString());
-                                Lines.Add("Facing: " + player.playerRobot.currentDirection.ToString());
-                                Lines.Add("Damage: " + player.playerRobot.damage.ToString());
-                                Lines.Add("Flags: " + player.playerRobot.flags.ToString());
-                                Lines.Add("Moves: ");
-                                foreach (cardModel card in player.move)
-                                {
-                                    Lines.Add(card.ToString());
-                                }
-                            }
-                            else
-                            {
-                                Lines.Add("Player is shutdown.");
-                            }
-                            Lines.Add("");
-                        }
-                    }
+                    gameStatus.roundRunning = true;
+
+                    // Log round start
+                    Loggers.loggers.ForEach((Logger) => Logger.LogRoundStart(gameStatus.players));
 
                     // Execute player moves                  
                     moveCalculator.executeRegisters();
-
-                    if (serviceHelpers.logging)
-                    {
-                        Lines.Add("---- Final State ----");
-                        foreach (Player player in gameStatus.players)
-                        {
-                            Lines.Add("Player: " + (player.playerNumber + 1).ToString());
-                            Lines.Add("X: " + player.playerRobot.x_pos.ToString());
-                            Lines.Add("Y: " + player.playerRobot.y_pos.ToString());
-                            Lines.Add("Facing: " + player.playerRobot.currentDirection.ToString());
-                            Lines.Add("Damage: " + player.playerRobot.damage.ToString());
-                            Lines.Add("Flags: " + player.playerRobot.flags.ToString());
-                            Lines.Add("Moves: ");
-                            Lines.Add("");
-                        }
-                        Lines.Add("---- End Round ----");
-                    }
 
                     // Reset for next round
                     if (!gameStatus.winner)
                     {
                         nextRound();
                     }
-                    else if (serviceHelpers.logging)
+                    else
                     {
-                        // Log end of game
-                        Lines.Add("---- Game End ----");
-                    }
-
-                    if (serviceHelpers.logging)
-                    {
-                        // Write log file
-                        File.AppendAllLines(serviceHelpers.rootPath + serviceHelpers.logfile, Lines.ToArray());
+                        Loggers.loggers.ForEach((Logger) => Logger.LogGameEnd(gameStatus.players));
                     }
                 }
             }
-            // Checks is a timer needs to be started right away
+            // Checks if a timer needs to be started right away if there's only one player alive/not shut down
             Thread.Sleep(2000);
             checkTimer();
+            gameStatus.roundRunning = false;
         }
 
         /// <summary>
@@ -184,7 +135,7 @@ namespace RoboRuckus.RuckusCode
         }
 
         /// <summary>
-        /// Sends the current register  being executed to the players
+        /// Sends the current register being executed to the players
         /// </summary>
         /// <param name="register">The register being executed</param>
         public void displayRegister(moveModel[] register)
@@ -205,7 +156,7 @@ namespace RoboRuckus.RuckusCode
                         robots += ", ";
                     }
                     first = false;
-                    cards += currentCard.Insert(currentCard.LastIndexOf("}") - 1, ",\"cardNumber\": " + move.card.cardNumber.ToString());
+                    cards += currentCard.Insert(currentCard.LastIndexOf('}') - 1, ",\"cardNumber\": " + move.card.cardNumber.ToString());
                     robots += "\"" + move.bot.robotName + "\"";
                 }
                 cards += "]";
@@ -231,7 +182,7 @@ namespace RoboRuckus.RuckusCode
                         byte[] cards;
                         if (caller.shutdown)
                         {
-                            cards = new byte[0];
+                            cards = [];
                         }
                         else
                         {
@@ -253,7 +204,7 @@ namespace RoboRuckus.RuckusCode
                 }
                 else
                 {
-                    return new byte[0];
+                    return [];
                 }
             }
         }
@@ -282,6 +233,74 @@ namespace RoboRuckus.RuckusCode
         }
 
         /// <summary>
+        /// Re-enters a player after they died
+        /// </summary>
+        /// <param name="player">The player to re-enter</param>
+        /// <param name="EnterLocation">The X, Y coordinate to start them on</param>
+        /// <param name="facing">The robot's facing to start them on</param>
+        public void enterPlayer(Player player, int[] EnterLocation, Robot.orientation facing)
+        {
+            Robot bot = player.playerRobot;
+            bot.x_pos = EnterLocation[0];
+            bot.y_pos = EnterLocation[1];
+            bot.damage = 0;
+            bot.currentDirection = facing;
+            Loggers.loggers.ForEach((Logger) => Logger.LogPlayerEntering(player));
+            player.dead = false;
+        }
+
+        /// <summary>
+        /// Updates a player with new status values
+        /// </summary>
+        /// <param name="player">The player to update</param>
+        /// <param name="lives">The lives to assign them</param>
+        /// <param name="damage">The damage to assign them</param>
+        /// <param name="botX">The robot X coordinate to assign</param>
+        /// <param name="botY">The robot Y coordinate to assign</param>
+        /// <param name="botDir">The bot facing to assign</param>
+        /// <param name="botName">The robot assigned to them</param>
+        /// <param name="flags">RThe number of flags to assign</param>
+        public void updatePlayer(Player player, int lives, sbyte damage, int botX, int botY, int botDir, string botName, int flags) 
+        {
+            Robot bot = player.playerRobot;
+            player.lives = lives;
+            if (botName != "" && bot.robotName != botName && gameStatus.robotPen.Exists(r => r.robotName == botName))
+            {
+                // Get new bot
+                Robot newBot = gameStatus.robotPen.FirstOrDefault(r => r.robotName == botName);
+                gameStatus.robotPen.Remove(newBot);
+
+                // Clear old bot
+                bot.y_pos = -1;
+                bot.x_pos = -1;
+                bot.damage = 0;
+                bot.flags = 0;
+                bot.controllingPlayer = -1;
+
+                // Wait for bot to acknowledge receipt of order
+                botSignals.sendReset(bot.robotNum);
+
+                // Setup new bot
+                newBot.robotNum = bot.robotNum;
+                newBot.lastLocation = bot.lastLocation;
+                gameStatus.robots[newBot.robotNum] = newBot;
+                gameStatus.robotPen.Add(bot);
+
+                bot = newBot;
+                bot.controllingPlayer = player.playerNumber;
+                player.playerRobot = bot;
+                SpinWait.SpinUntil(() => botSignals.sendPlayerAssignment(bot.robotNum, player.playerNumber + 1));
+            }
+            // Assign updates
+            bot.damage = damage;
+            bot.x_pos = botX;
+            bot.y_pos = botY;
+            bot.currentDirection = (Robot.orientation)botDir;
+            bot.flags = flags;
+            Loggers.loggers.ForEach((Logger) => Logger.LogPlayerUpdate(player));
+        }
+
+        /// <summary>
         /// Resets the game to the initial state
         /// <param name="resetAll">If 0 reset game with current players, if 1 reset game to initial state</param>
         /// </summary>
@@ -289,6 +308,23 @@ namespace RoboRuckus.RuckusCode
         {
             lock (gameStatus.locker)
             {
+                foreach (Robot r in gameStatus.robots)
+                {
+                    r.y_pos = -1;
+                    r.x_pos = -1;
+                    r.damage = 0;
+                    r.flags = 0;
+                    if (resetAll == 1)
+                    {
+                        botSignals.sendReset(r.robotNum);
+                        r.controllingPlayer = -1;
+                        gameStatus.robotPen.Add(r);
+                    }
+                }
+                if (resetAll == 1)
+                {
+                    gameStatus.robots.Clear();
+                }
                 gameStatus.winner = false;
                 gameStatus.lockedCards.Clear();
                 gameStatus.playersNeedEntering = false;
@@ -311,23 +347,6 @@ namespace RoboRuckus.RuckusCode
                     gameStatus.players.Clear();
                     gameStatus.gameReady = false;
                     gameStatus.numPlayersInGame = 0;
-                }
-                foreach (Robot r in gameStatus.robots)
-                {
-                    r.y_pos = -1;
-                    r.x_pos = -1;
-                    r.damage = 0;
-                    r.flags = 0;
-                    if (resetAll == 1)
-                    {
-                        botSignals.sendReset(r.robotNum);
-                        r.controllingPlayer = null;
-                        gameStatus.robotPen.Add(r);
-                    }
-                }
-                if (resetAll == 1)
-                {
-                    gameStatus.robots.Clear();
                 }
                 _playerHub.Clients.All.SendAsync("Reset", resetAll);
             }
@@ -355,8 +374,8 @@ namespace RoboRuckus.RuckusCode
                     }
                     while (randomNumber[0] >= numberOfCards);
                     drawn = randomNumber[0];
-                } while (gameStatus.deltCards.Contains(drawn) || gameStatus.lockedCards.Contains(drawn));
-                gameStatus.deltCards.Add(drawn);
+                } while (gameStatus.dealtCards.Contains(drawn) || gameStatus.lockedCards.Contains(drawn));
+                gameStatus.dealtCards.Add(drawn);
                 return drawn;
             }
         }
@@ -386,13 +405,13 @@ namespace RoboRuckus.RuckusCode
                 }
             }
             // Clear dealt cards
-            gameStatus.deltCards.Clear();
+            gameStatus.dealtCards.Clear();
 
             // Check for winner
             if (!gameStatus.winner)
             {
                 // Check if there are dead players with lives left who need to re-enter the game
-                if (gameStatus.players.Any(p => (p.dead && p.lives > 0)))
+                if (gameStatus.players.Any(p => p.dead && p.lives > 0))
                 {
                     gameStatus.playersNeedEntering = true;
                     showMessage("Dead robots re-entering floor, please be patient.", "entering");
@@ -404,7 +423,7 @@ namespace RoboRuckus.RuckusCode
                     if (!gameStatus.players.All(p => p.lives <= 0) && gameStatus.players.All(p => p.shutdown || p.lives <= 0))
                     {
                         // Clear dealt cards
-                        _playerHub.Clients.All.SendAsync("deal", new byte[0], new byte[0]);                        
+                        _playerHub.Clients.All.SendAsync("deal", Array.Empty<byte>(), Array.Empty<byte>());                        
 
                         // Alert players to what's happening
                         showMessage("All active players are shutdown, next round starting now.");
@@ -432,7 +451,7 @@ namespace RoboRuckus.RuckusCode
         private bool checkTimer()
         {
             // Makes sure there is more than one living player in the game, and checks if there is only one player who hasn't submitted their program.
-            if (gameStatus.playerTimer && gameStatus.players.Count(p => !p.dead) > 1 && gameStatus.players.Count(p => (p.move != null || p.dead || p.shutdown)) == (gameStatus.numPlayersInGame - 1))
+            if (gameStatus.playerTimer && gameStatus.players.Count(p => !p.dead) > 1 && gameStatus.players.Count(p => p.move != null || p.dead || p.shutdown) == (gameStatus.numPlayersInGame - 1))
             {
                 timerStarted = true;
                 _playerHub.Clients.All.SendAsync("startTimer");

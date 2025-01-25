@@ -28,7 +28,7 @@
                     board += '</div>';
                 }
                 // Load board image
-                $("#board").html(board).css("background-image", 'url("/images/boards/' + name.replace(" ", "") + '.png")');
+                $("#board").html(board).css("background-image", 'url("/images/boards/' + name.replaceAll(" ", "") + '.png")');
                 //Enable flag placement
                 $(".boardSquare").droppable({
                     accept: "#flagContainer div, .boardSquare div",

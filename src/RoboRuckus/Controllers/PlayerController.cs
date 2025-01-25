@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using RoboRuckus.Logging;
 using RoboRuckus.Models;
 using RoboRuckus.RuckusCode;
 using System.Linq;
@@ -79,6 +80,7 @@ namespace RoboRuckus.Controllers
         /// Set's up a player
         /// </summary>
         /// <param name="player">The player number</param>
+        /// <param name="reset">Set to 1 to indicate this was called from a game reset action</param>
         /// <returns>The view</returns>
         public IActionResult playerSetup(int player = 0, int reset = 0)
         {
@@ -88,7 +90,7 @@ namespace RoboRuckus.Controllers
                 return RedirectToAction("addPlayer", new { player });
             }
             // Check if player is already set up
-            else if (gameStatus.players[player - 1].playerRobot != null && reset !=1)
+            else if (gameStatus.players[player - 1].playerRobot != null && reset != 1)
             {
                 return RedirectToAction("Index", new { player });
             }
@@ -122,7 +124,7 @@ namespace RoboRuckus.Controllers
                 lock (gameStatus.setupLocker)
                 {
                     // Check if robot was already assigned
-                    if (!gameStatus.assignBot(playerData.player, playerData.botName))
+                    if (!gameStatus.assignBot(playerData.player - 1, playerData.botName))
                     {
                         return RedirectToAction("playerSetup", new { playerData.player });
                     }
@@ -136,8 +138,13 @@ namespace RoboRuckus.Controllers
                         Player sender = gameStatus.players[playerData.player - 1];
                         sender.playerRobot.x_pos = playerData.botX;
                         sender.playerRobot.y_pos = playerData.botY;
-                        sender.playerRobot.lastLocation = new int[] { playerData.botX, playerData.botY };
+                        sender.playerRobot.lastLocation = [ playerData.botX, playerData.botY ];
                         sender.playerRobot.currentDirection = (Robot.orientation)playerData.botDir;
+                        // Log an in-game player addition
+                        if (gameStatus.gameStarted)
+                        {
+                            Loggers.loggers.ForEach((Logger) => Logger.LogPlayerAdded(sender));
+                        }
                         return RedirectToAction("Index", new { playerData.player });
                     }
                 }
@@ -155,14 +162,14 @@ namespace RoboRuckus.Controllers
             bool first = true;
             foreach (Robot active in gameStatus.robots)
             {
-                if (active.controllingPlayer != null)
+                if (active.controllingPlayer != -1)
                 {
                     if (!first)
                     {
                         result += ",";
                     }
                     first = false;
-                    result += "\"" + active.controllingPlayer.playerNumber.ToString() + "\": {\"number\": " + active.controllingPlayer.playerNumber.ToString() + ",\"x\": " + active.x_pos.ToString() + ",\"y\": " + active.y_pos.ToString() + ",\"direction\": " + active.currentDirection.ToString("D") + "}";
+                    result += "\"" + active.controllingPlayer.ToString() + "\": {\"number\": " + active.controllingPlayer.ToString() + ",\"x\": " + active.x_pos.ToString() + ",\"y\": " + active.y_pos.ToString() + ",\"direction\": " + active.currentDirection.ToString("D") + "}";
                 }
             }
             result += "}, \"botNames\": " + JsonConvert.SerializeObject(gameStatus.robotPen.Select(r => r.robotName).ToArray()) + "}";
