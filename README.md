@@ -11,7 +11,7 @@ There are two main ways to deploy the game server. The first, and preferred, is 
 4. That's it!
 
 # Developing
-If you want to explore and edit the code for the RoboRcukus game server, that's great! While either Visual Studio or Visual Studio Code are recommended for this, these instructions will be specific to using the cross-platform Visual Studio Code (VS Code). Here are steps necessary to get started:
+If you want to explore and edit the code for the RoboRuckus game server, that's great! While either Visual Studio or Visual Studio Code are recommended for this, these instructions will be specific to using the cross-platform Visual Studio Code (VS Code). Here are steps necessary to get started:
 1. Install [Visual Studio Code](https://code.visualstudio.com/docs/setup/setup-overview).
 2. Install the [C# Dev Kit Extension](https://code.visualstudio.com/docs/languages/csharp#_installing-c35-support).
 3. Optionally: If you wish to develop the Docker container [install Docker and the VS Code extension](https://code.visualstudio.com/docs/containers/overview).
